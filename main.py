@@ -30,7 +30,7 @@ def addcurr(message):
     #    update.add_handler()
 
 def secstep(message, smsm):   
-    bot.send_message(chat_id=message.chat_id,text= smsm+"\ngetted")
+    bot.send_message(chat_id=message.chat.id,text= smsm+"\ngetted")
 
 def main_loop():
     bot.polling(none_stop=True)
