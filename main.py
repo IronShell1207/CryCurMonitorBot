@@ -4,16 +4,23 @@ import telegram
 import json
 import urllib.request
 import requests
-from typing import List
+import time
 
-def main():
+from telegram import Update, Bot, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton
+from telegram.ext import Updater, CallbackContext, Filters, MessageHandler, CallbackQueryHandler, CommandHandler, ConversationHandler
+from telegram.utils.request import Request
+
+def monitor(basecoin: str, quotecoin: str):
     url = "https://api.coinlore.net/api/exchange/?id=5"
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36"}
     data = requests.get(url,headers=headers).text
     decode_data = json.loads(data)
     for item in decode_data['pairs']:
-        if (item['base']=="BTC"):
-            print(item['price'])
+        if (item['base']==basecoin and item['quote']==quotecoin):
+            return item['price']    
+
+def main():
+    bot= Bot(token = "")
     
 if (__name__=="__main__"):
     main()
