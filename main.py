@@ -1,14 +1,14 @@
 import os
 import threading
-import telegram
+import telebot
 import json
 import urllib.request
 import requests
 import time
+import config
+import sys
 
-from telegram import Update, Bot, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton
-from telegram.ext import Updater, CallbackContext, Filters, MessageHandler, CallbackQueryHandler, CommandHandler, ConversationHandler
-from telegram.utils.request import Request
+bot = telebot.TeleBot(token=config.TOKEN)
 
 def monitor(basecoin: str, quotecoin: str):
     url = "https://api.coinlore.net/api/exchange/?id=5"
@@ -19,11 +19,29 @@ def monitor(basecoin: str, quotecoin: str):
         if (item['base']==basecoin and item['quote']==quotecoin):
             return item['price']    
 
-def main():
-    bot= Bot(token = "")
+
+@bot.message_handler(commands=['give'])
+def addcurr(message):
+    echo = bot.send_message(chat_id=message.chat.id ,text= "Пришли новый запрос")
+    bot.register_next_step_handler(message=echo, callback=secstep, args=['some text'])
+    
+    #for i in range(5):
+    #    thread = threading.Thread(thread=monitor,args=["RVN","USDT"])
+    #    update.add_handler()
+
+def secstep(message, smsm):   
+    bot.send_message(chat_id=message.chat_id,text= smsm+"\ngetted")
+
+def main_loop():
+    bot.polling(none_stop=True)
+
     
 if (__name__=="__main__"):
-    main()
+    try:
+        main_loop()
+    except KeyboardInterrupt:
+        print(sys.stderr+ '\nExiting by user request\n')
+        sys.exit(0)
 
 #https://rest.coinapi.io/v1/exchangerate/LTC/USDT?apikey=35A30795-914A-447C-9238-9265B9DB55C4
 #https://docs.coinapi.io/#endpoints-2
