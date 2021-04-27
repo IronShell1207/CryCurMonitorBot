@@ -13,6 +13,7 @@ import keyboards
 
 bot = telebot.TeleBot(token=config.TOKEN)
 
+sleeptimer = 66
 
 TasksList = []
 class CryptoTask(object):
@@ -76,36 +77,66 @@ def callback_query(call):
             NewCryptoTask.rofl = True
         elif call.data == "CreateFall":
             NewCryptoTask.rofl = False
-        bot.send_message(chat_id=call.message.chat.id, text=f"Your task succesuffuly created. \nDetails of your task:\n{NewCryptoTask.ToString()}")
+        valuechanging =""
+        if NewCryptoTask.rofl == True: 
+            valuechanging= "Raise 📈" 
+        else: 
+            valuechanging="Fall 📉"
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}\nYou have selected: {valuechanging}", reply_markup=None)
+        for item in TasksList:
+            if item.base == NewCryptoTask.base and item.quote == NewCryptoTask.quote and item.rofl == NewCryptoTask.rofl :
+                bot.send_message(chat_id=call.message.chat.id, text=f"You already have same task: {NewCryptoTask.base}/{NewCryptoTask.quote}.\n{item.ToString()}\n\nDisable this task and create new one!")
+                return    
+       
+        bot.send_message(chat_id=call.message.chat.id, text=f"Your task succesuffuly created. \nDetails of your task:\n{NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /startalltasks")
         TasksList.append(NewCryptoTask)
-        
+    if "disable" in call.data:
+        idtask = str(call.data).split('/')[-1]
+        TasksList[int(idtask)-1].enable=False
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}\nDisabled!", reply_markup=None)
+        #bot.send_message(chat_id=call.message.chat.id, text=f"Task #{idtask} have stopped.")
 
-taskloopenabled = false
-threadTaskloop
 
-def taskLoop(message):
+def taskLoop(message, item: CryptoTask):
+    while (item.enable==True):
+        getprice = monitor(basecoin=item.base, quotecoin=item.quote)
+        if item.rofl==True and getprice>item.price:
+            print(f"Price raises to {getprice} from {item.price}")
+            bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {getprice}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+        elif item.rofl==False and getprice<item.price:
+            print(f"Price fall to {getprice} from {item.price}")
+            bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already fall 📉 to {getprice}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+        print(f"No changes Pair: {item.base}/{item.quote}. Current price: {getprice}")
+        time.sleep(sleeptimer)
+
+
+@bot.message_handler(commands=['startalltasks'])
+def startALLtasks(message):
+    if len(TasksList) > 0:
+        for item in TasksList:
+            if item.enable==False:
+                item.enable=True
+                threadTaskloop = threading.Thread(target=taskLoop, args=[message, item])
+                threadTaskloop.start()
+            else: 
+                bot.send_message(chat_id=message.chat.id, text=f"Your pair {item.base}/{item.quote} is already going!")
+        bot.send_message(chat_id=message.chat.id, text=f"Your {len(TasksList)} monitoring tasks are started! For check all your tasks send /alltasks")
+    else: 
+        bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
+
+@bot.message_handler(commands=['stopalltasks'])
+def stoptasks(message):
     for item in TasksList:
-        while (item.enable==True):
-            getprice = monitor(basecoin=item.base, quotecoin=item.quote)
-            if item.rofl==true and getprice>item.price:
-                bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {getprice}!")
-            elif item.rofl==false and getprice<item.price:
-                bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already fall 📉 to {getprice}!")
-            time.sleep(30000)
+        item.enable=False
+    bot.message_handler(chat_id=message.chat.id, text="All tasks stopped")
 
-
-@bot.message_handler(commands=['starttasks'])
-def starttasks(message):
-    global threadTaskloop
-    if taskloopenabled==True:
-        bot.send_message(chat_id=message.chat.id, "Tasks already started! To stop send /stoptaasks")
-        return
-    elif taskloopenabled==False and TasksList.len > 0:
-        threadTaskloop = threading.Thread(target=taskLoop, args=[message])
-        threadTaskloop.start()
-        bot.send_message(chat_id=message.chat.id, text=f"Your {TasksList.len} monitoring tasks are started! For check all your tasks send /alltasks")
-    else: bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
-
+@bot.message_handler(func= lambda message: 'disable' in message.text )
+def disabletask(message):
+    ida = str(message.text).split()[-1]
+    TasksList[int(ida)-1].enable=False
+    bot.message_handler(chat_id=message.chat.id, text=f"Task #{ida} have stopped.")
+    
+    
 @bot.message_handler(commands=['start'])
 def start(message):
     echo = bot.send_message(chat_id=message.chat.id, text="Hello! I'm crypto currency exchange monitor bot. I can send you notification when your currency is raise or fall to setted value. For create new task send: /createtask.")
