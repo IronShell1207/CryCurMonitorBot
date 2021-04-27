@@ -42,6 +42,7 @@ def monitor(basecoin: str, quotecoin: str):
             return item['price']    
 
 
+
 @bot.message_handler(commands=['createtask'])
 def createnewtask(message):
     global NewCryptoTask
@@ -77,12 +78,33 @@ def callback_query(call):
             NewCryptoTask.rofl = False
         bot.send_message(chat_id=call.message.chat.id, text=f"Your task succesuffuly created. \nDetails of your task:\n{NewCryptoTask.ToString()}")
         TasksList.append(NewCryptoTask)
-        for item in TasksList:
-            print(item.ToString())
-
         
+
+taskloopenabled = false
+threadTaskloop
+
 def taskLoop(message):
-    pass
+    for item in TasksList:
+        while (item.enable==True):
+            getprice = monitor(basecoin=item.base, quotecoin=item.quote)
+            if item.rofl==true and getprice>item.price:
+                bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {getprice}!")
+            elif item.rofl==false and getprice<item.price:
+                bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already fall 📉 to {getprice}!")
+            time.sleep(30000)
+
+
+@bot.message_handler(commands=['starttasks'])
+def starttasks(message):
+    global threadTaskloop
+    if taskloopenabled==True:
+        bot.send_message(chat_id=message.chat.id, "Tasks already started! To stop send /stoptaasks")
+        return
+    elif taskloopenabled==False and TasksList.len > 0:
+        threadTaskloop = threading.Thread(target=taskLoop, args=[message])
+        threadTaskloop.start()
+        bot.send_message(chat_id=message.chat.id, text=f"Your {TasksList.len} monitoring tasks are started! For check all your tasks send /alltasks")
+    else: bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
 
 @bot.message_handler(commands=['start'])
 def start(message):
