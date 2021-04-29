@@ -15,7 +15,7 @@ import keyboards
 
 bot = telebot.TeleBot(token=config.TOKEN)
 
-sleeptimer = 66
+sleeptimer = 150
 
 TasksList = []
 class CryptoTask(object):
