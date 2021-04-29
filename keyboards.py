@@ -10,8 +10,8 @@ def get_raise_fall_kb():
 
 def get_disable_task_kb(idtask: int):
     markup = InlineKeyboardMarkup()
-    item1 =InlineKeyboardButton("Disable ❌", callback_data = f"disable/{idtask}")
-    item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"edittask/{idtask}")
+    item1 =InlineKeyboardButton("Disable ❌", callback_data = f"t/disable/{idtask}")
+    item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"t/edittask/{idtask}")
     markup.add(item1, item2)
     return markup
 
@@ -21,4 +21,10 @@ def get_startup_keys():
     item1 = InlineKeyboardButton("Create new task 📊", callback_data="createtask")
     item2 = InlineKeyboardButton("View my tasks 📝",callback_data="viewtasks")
     markup.add(item1, item2)
+    return markup
+
+def get_starttask_keys(idtask: int):
+    markup = InlineKeyboardMarkup()
+    item1 = InlineKeyboardButton("Start task ✅", callback_data=f"t/starttask/{idtask}")
+    markup.add(item1)
     return markup
