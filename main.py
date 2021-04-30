@@ -197,6 +197,7 @@ def main_loop():
     try:
         bot.polling(none_stop=True)
         
+
     except ConnectionError:
         time.sleep(5)
         main_loop()
