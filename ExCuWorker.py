@@ -21,10 +21,34 @@ def getCurExRates():
         for url in urls:
             data = requests.get(url,headers=headers).text
             decode_data = json.loads(data)
-            TimeLastUpdate = date + timedelta(seconds=120)
+            TimeLastUpdate = date + timedelta(seconds=160)
             for item in decode_data['pairs']:
                 CurExRates.append(item)
     return CurExRates
+
+
+def monitor(basecoin: str, quotecoin: str):
+    for i in range(4):
+        data = getCurExRates()
+        for item in data:
+            if (item['base']==basecoin and item['quote']==quotecoin):
+                return item['price']
+
+
+def isCurrencyValid(currency: str, baseOrQuote: bool) -> bool:
+    for i in range(4):
+        data = getCurExRates()
+        cur = 'base' if baseOrQuote else 'quote' 
+        for item in data:
+            if (item[cur]==currency):
+                return True
+    return False
+
+
+
+
+
+
 """
 class data_ex(object):
         def __init__(self,base: str = "",quote: str="",idbase:int = 0):
@@ -55,20 +79,3 @@ class ExchangeCurBase:
                 i+=1
             time.sleep(1000)
 """
-
-def monitor(basecoin: str, quotecoin: str):
-    for i in range(4):
-        data = getCurExRates()
-        for item in data:
-            if (item['base']==basecoin and item['quote']==quotecoin):
-                return item['price']
-
-
-def isCurrencyValid(currency: str, baseOrQuote: bool) -> bool:
-    for i in range(4):
-        data = getCurExRates()
-        cur = 'base' if baseOrQuote else 'quote' 
-        for item in data:
-            if (item[cur]==currency):
-                return True
-    return False
