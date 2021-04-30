@@ -46,7 +46,7 @@ class CryptoTask(object):
     def ToShortStr(self) -> str:
         arr = ">" if self.rofl else "<"
         en = 'enabled' if self.enable==True else 'disabled'
-        pr = pr = self.price if self.price>1 else "{:^10.10f}".format(self.price)
+        pr = pr = self.price if self.price>1 else "{:^10.8f}".format(self.price)
         return f"Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr} is {en}"
 
 
@@ -137,7 +137,6 @@ def start_task(message, idx: int):
 def createnewtask(message):
     global mainthread
     global USERlist
-   #if mainthread.isAlive() is not True:
     echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'")
     bot.register_next_step_handler(message=echo, callback=crtask_baseset)
     if message.chat.id not in USERlist:
@@ -179,7 +178,7 @@ def startALLtasks(message):
                     i+=1
                 else: 
                     bot.send_message(chat_id=message.chat.id, text=f"Your pair {item.base}/{item.quote} is already going!")
-        bot.send_message(chat_id=message.chat.id, text=f"Your {i} monitoring tasks are started! For check all your tasks send /alltasks")
+        bot.send_message(chat_id=message.chat.id, text=f"Your {i} monitoring tasks are started! For check all your tasks send /showtasks")
     else: 
         bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
 
