@@ -252,7 +252,7 @@ def tasks_loop(message):
 def main_loop():
     try:
         bot.polling(none_stop=True)
-        
+        print(bot.get_me)
 
     except ConnectionError:
         time.sleep(5)
