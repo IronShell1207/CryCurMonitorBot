@@ -195,15 +195,21 @@ def stoptasks(message):
 @bot.message_handler(func= lambda message: 'disable' in message.text )
 def disabletask(message):
     ida = str(message.text).split()[-1]
-    TasksList[int(ida)-1].enable=False
-    bot.send_message(chat_id=message.chat.id, text=f"Task #{ida} have stopped.")
+    try:
+        TasksList[int(ida)-1].enable=False
+        bot.send_message(chat_id=message.chat.id, text=f"Task #{ida} have stopped.")
+    except:
+        bot.send_message(chat_id=message.chat.id, text=f"Missing task ID")
 
 
 @bot.message_handler(func= lambda message: 'enable' in message.text )
 def disabletask(message):
     ida = str(message.text).split()[-1]
-    TasksList[int(ida)-1].enable=True
-    bot.send_message(chat_id=message.chat.id, text=f"Task #{ida} have started.")
+    try:
+        TasksList[int(ida)-1].enable=True
+        bot.send_message(chat_id=message.chat.id, text=f"Task #{ida} have started.")
+    except:
+        bot.send_message(chat_id=message.chat.id, text=f"Missing task ID")
     
     
 @bot.message_handler(commands=['showtasks'])
