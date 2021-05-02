@@ -61,6 +61,7 @@ def write_json_tasks(tasklist: list):
     with (open(filename, 'w')) as writeFile:
         try:
             json.dump(obj=tasklist,cls=TaskEncoder,fp=writeFile,indent=2)
+            print(f"{len(tasklist)} tasks writen to {filename}")
             return True
         except:
             return False

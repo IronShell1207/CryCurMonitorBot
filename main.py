@@ -16,7 +16,8 @@ import CryptoTask as CT
 import keyboards
 
 TasksList = []
-bot = telebot.TeleBot(token=config.TOKEN)
+tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' else config.TOKEN_px
+bot = telebot.TeleBot(token=tof)
 
 mainthread = threading.Thread()
 sleeptimer = 70
