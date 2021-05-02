@@ -12,48 +12,26 @@ import datetime
 import re
 
 import ExCuWorker
+import CryptoTask as CT
 import keyboards
 
 TasksList = []
 bot = telebot.TeleBot(token=config.TOKEN)
 
 mainthread = threading.Thread()
-sleeptimer = 45
-USERlist = []
+sleeptimer = 70
+USERlist=[]
 
-class CryptoTask(object):
-    def __init__(self, 
-    id: int = 0, 
-    user_id: int = 0, 
-    base: str = "", 
-    quote: str = '', 
-    price: float = 0.0, 
-    rofl: bool = False, 
-    enable: bool = False):
-        self.id = len(TasksList)+1
-        self.user_id = user_id
-        self.base = base
-        self.quote = quote
-        self.price = price
-        self.rofl = rofl
-        self.enable = enable
-    
-    def ToString(self) -> str:
-        arr = ">" if self.rofl else "<"
-        pr = self.price if self.price>1 else "{:^10.8f}".format(self.price)
-        return f"Currency monitor task #{self.id}.\n\nEnabled: {self.enable}\nBase currency: {self.base}\nQuote currency: {self.quote}\nWaiting for price: {arr}{pr}"
-    
-    def ToShortStr(self) -> str:
-        arr = ">" if self.rofl else "<"
-        en = 'enabled' if self.enable==True else 'disabled'
-        pr = pr = self.price if self.price>1 else "{:^10.8f}".format(self.price)
-        return f"Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr} is {en}"
 
+tasksjsn = CT.get_json_task_list()
+if tasksjsn != None:
+    TasksList=tasksjsn
+# Добавить обработку при завершении создания таска, удаление из списка и редактирования путем полного перезаписывания файла 
 
 # Переадресация с main сюда
 def crtask_baseset(message):
     global NewCryptoTask
-    NewCryptoTask = CryptoTask(user_id=message.chat.id)
+    NewCryptoTask = CT.CryptoTask(user_id=message.chat.id)
     NewCryptoTask.base = message.text.upper()
     if ExCuWorker.isCurrencyValid(NewCryptoTask.base, True):
         echo = bot.send_message(chat_id=message.chat.id, text=f"Your base currency: {NewCryptoTask.base}. Now please send the quote currency (for example: 'USDT')")
@@ -86,9 +64,10 @@ def crtask_rofl(message,data):
     global TasksList
     NewCryptoTask.rofl = True if data == "CreateRaise" else False
     valuechanging = "Raise 📈" if NewCryptoTask.rofl else "Fall 📉"
-    
     bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}\nYou have selected: {valuechanging}", reply_markup=None)
     for item in TasksList:
+        if NewCryptoTask.id == item.id:
+            NewCryptoTask.id+=1
         if item.base == NewCryptoTask.base and item.quote == NewCryptoTask.quote and item.rofl == NewCryptoTask.rofl and item.user_id == NewCryptoTask.user_id :
             bot.send_message(chat_id=message.chat.id, text=f"You already have same task: {NewCryptoTask.base}/{NewCryptoTask.quote}.\n{item.ToString()}\n\nDisable this task and create new one!", reply_markup=keyboards.get_remove_edit_kb(item.id))
             return    
@@ -99,20 +78,25 @@ Details of your task:
 To start tasks send /startalltasks""", 
                     reply_markup=keyboards.get_starttask_keys(NewCryptoTask.id))
     TasksList.append(NewCryptoTask)
+    CT.write_json_tasks(TasksList)
     
 
 def disable_task(message, idz):
     TasksList[int(idz)].enable=False
     bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}\n❗️Disabled", reply_markup=None)
+    CT.write_json_tasks(TasksList)
 
 
 def edit_task(message,idz):
-    TasksList[int(idsz)].enable=False
-    bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}", reply_markup=None)
-    echo = bot.send_message(chat_id=message.chat.id, text="For edit price send the new one.\nFor example: 0.0004010")
-    NewCryptoTask = TasksList[int(idz)]
-    TasksList.remove(NewCryptoTask)
-    bot.register_next_step_handler(message=echo,callback=crtask_rofl)
+    if (message.chat.id == TasksList[int(idz)].user_id):
+        TasksList[int(idz)].enable=False
+        bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}", reply_markup=None)
+        echo = bot.send_message(chat_id=message.chat.id, text="For edit price send the new one.\nFor example: 0.0004010")
+        NewCryptoTask = TasksList[int(idz)]
+        TasksList.remove(NewCryptoTask)
+        bot.register_next_step_handler(message=echo,callback=crtask_rofl)
+    else: raise Exception("No such task id from this user")
+    
 
 def remove_task(message, idx):
     item = TasksList[idx]
@@ -121,7 +105,8 @@ def remove_task(message, idx):
         bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}", reply_markup=None)
         bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
         TasksList.remove(item)
-    
+        CT.write_json_tasks(TasksList)
+    else: raise Exception("No such task id from this user")
 
 def start_task(message, idx: int):
     item = TasksList[idx]
@@ -129,6 +114,7 @@ def start_task(message, idx: int):
         item.enable=True
         bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}", reply_markup=None)
         bot.send_message(chat_id=message.chat.id, text=f"✅ Pair {item.base}/{item.quote} is now monitoring!")
+    else: raise Exception("No such task id from this user")
 
 
 
@@ -202,6 +188,14 @@ def disabletask(message):
         bot.send_message(chat_id=message.chat.id, text=f"Missing task ID")
 
 
+@bot.message_handler(func= lambda message: 'edittask' in message.text )
+def disabletask(message):
+    ida = str(message.text).split()[-1]
+    try:
+        edit_task(message,ida)
+    except:
+        bot.send_message(chat_id=message.chat.id, text=f"Missing task ID")
+
 @bot.message_handler(func= lambda message: 'enable' in message.text )
 def disabletask(message):
     ida = str(message.text).split()[-1]
@@ -231,7 +225,7 @@ def start(message):
 @bot.message_handler(commands=['help'])
 def help(message):
     echo = bot.send_message(chat_id=message.chat.id,
-                            text="Commands list:\n1. Create new monitoring task - /createtask\n2. Start all monitoring tasks - /startalltasks\n3.Stop all monitoring tasks - /stopalltasks\n4. Show all tasks /showtasks\n5. Disable monitoring by ID - /disable <id>\n6. Enable monitoring by ID - /enable <id>")
+                            text="Commands list:\n1. Create new monitoring task - /createtask\n2. Start all monitoring tasks - /startalltasks\n3.Stop all monitoring tasks - /stopalltasks\n4. Show all tasks /showtasks\n5. Disable monitoring by ID - /disable <id>\n6. Enable monitoring by ID - /enable <id>7. Edit task - /edit <id>")
 
 def tasks_loop(message):
     while(True):
