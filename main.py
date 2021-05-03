@@ -272,7 +272,9 @@ def tasks_loop(message):
 
 def main_loop():
     try:
-        print(bot.get_me())
+        Binf = str(bot.get_me()).replace("'",'"').replace('None','"None"').replace('False','"False"').replace('True','"True"')
+        botinfo = json.loads(Binf)
+        print(f"Bot have been started. \nID: {botinfo['id']}\nName: {botinfo['first_name']}\nUserName: {botinfo['username']} ")
         bot.polling(none_stop=True) 
 
     except ConnectionError:
