@@ -151,7 +151,11 @@ def callback_query(call):
         elif call.data == "createtask":
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
             createnewtask(call.message)
-    except:
+        elif call.data == "startalltasks":
+            startALLtasks(call.message)
+        elif call.data == "stopalltasks":
+            stoptasks(call.message)
+    except (IndexError):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")  
 
 
@@ -222,7 +226,7 @@ def showtasks(message):
     for item in TasksList:
         if item.user_id == message.chat.id:
             printer += item.ToShortStr()+"\n"
-    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring task list:\n{printer}")
+    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring task list:\n{printer}", reply_markup=keyboards.get_en_dis_all_keys())
 
     
 @bot.message_handler(commands=['start'])
@@ -235,7 +239,15 @@ def start(message):
 @bot.message_handler(commands=['help'])
 def help(message):
     echo = bot.send_message(chat_id=message.chat.id,
-                            text="Commands list:\n1. Create new monitoring task - /createtask\n2. Start all monitoring tasks - /startalltasks\n3.Stop all monitoring tasks - /stopalltasks\n4. Show all tasks /showtasks\n5. Disable monitoring by ID - /disable <id>\n6. Enable monitoring by ID - /enable <id>7. Edit task - /edit <id>")
+                            text="""Commands list:
+1. Create new monitoring task - /createtask
+2. Start all monitoring tasks - /startalltasks
+3.Stop all monitoring tasks - /stopalltasks
+4. Show all tasks /showtasks
+5. Disable monitoring by ID - /disable <id>
+6. Enable monitoring by ID - /enable <id>
+7. Edit task - /edit <id>""")
+    
 
 def tasks_loop(message):
     while(True):
@@ -260,8 +272,8 @@ def tasks_loop(message):
 
 def main_loop():
     try:
-        bot.polling(none_stop=True)
-        print(bot.get_me)
+        print(bot.get_me())
+        bot.polling(none_stop=True) 
 
     except ConnectionError:
         time.sleep(5)
