@@ -53,7 +53,7 @@ def get_json_task_list():
                              quote=item['quote'],
                              price=item['price'],
                              rofl=item['rofl'],
-                             enable=item['enable'])
+                             enable=False)
             cryptoData.append(dag)
         return cryptoData
     

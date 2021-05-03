@@ -20,7 +20,7 @@ tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' 
 bot = telebot.TeleBot(token=tof)
 
 mainthread = threading.Thread()
-sleeptimer = 70
+sleeptimer = 90
 USERlist=[]
 
 
@@ -94,7 +94,7 @@ def crtask_rofl(message, data):
 #Обработки call-backov 
 @bot.message_handler(content_types=["audio", "document", "photo", "sticker", "video", "video_note", "voice", "location", "contact", "new_chat_members", "left_chat_member", "new_chat_title", "new_chat_photo", 'delete_chat_photo', 'group_chat_created', 'supergroup_chat_created', 'channel_chat_created', 'migrate_to_chat_id', 'migrate_from_chat_id', 'pinned_message'])
 def handshit(message):
-    bot.send_message(chat_id=message.chat.id, text="I dont accept this. I will send this to my admin!!")
+    bot.send_message(chat_id=message.chat.id, text="I dont accept this. I will send it to my admin!!")
     
 @bot.message_handler(func= lambda message: 'disable' in message.text, content_types=['text'])
 def disable_task(message, idz: int = -1):
