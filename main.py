@@ -92,7 +92,11 @@ def crtask_rofl(message, data):
 
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 #Обработки call-backov 
-@bot.message_handler(func= lambda message: 'disable' in message.text )
+@bot.message_handler(content_types=["audio", "document", "photo", "sticker", "video", "video_note", "voice", "location", "contact", "new_chat_members", "left_chat_member", "new_chat_title", "new_chat_photo", 'delete_chat_photo', 'group_chat_created', 'supergroup_chat_created', 'channel_chat_created', 'migrate_to_chat_id', 'migrate_from_chat_id', 'pinned_message'])
+def handshit(message):
+    bot.send_message(chat_id=message.chat.id, text="I dont accept this. I will send this to my admin!!")
+    
+@bot.message_handler(func= lambda message: 'disable' in message.text, content_types=['text'])
 def disable_task(message, idz: int = -1):
     try:
         if idz == -1:
@@ -109,7 +113,7 @@ def disable_task(message, idz: int = -1):
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
 
-@bot.message_handler(func= lambda message: 'edittask' in message.text)
+@bot.message_handler(func= lambda message: 'edittask' in message.text, content_types=['text'] )
 def edit_task(message, idz: int = -1):
     global NewCryptoTask
     try:
@@ -130,7 +134,7 @@ def edit_task(message, idz: int = -1):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
     
     
-@bot.message_handler(func= lambda message: 'remove' in message.text)
+@bot.message_handler(func= lambda message: 'remove' in message.text, content_types=['text'])
 def remove_task(message, idz: int = -1):
     try:
         if idz == -1:
@@ -151,7 +155,7 @@ def remove_task(message, idz: int = -1):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
     
 
-@bot.message_handler(func= lambda message: 'start' in message.text)
+@bot.message_handler(func= lambda message: 'start' in message.text, content_types=['text'])
 def start_task(message, idz: int = -1):
     try:
         if idz == -1:
