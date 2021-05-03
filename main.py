@@ -157,6 +157,10 @@ def callback_query(call):
 @bot.message_handler(commands=['startalltasks'])
 def startALLtasks(message):
     if len(TasksList) > 0:
+        if message.chat.id not in USERlist:
+            mainthread = threading.Thread(target=tasks_loop,args=[message])
+            mainthread.start()
+            USERlist.append(message.chat.id)
         i = 0
         for item in TasksList:
             if message.chat.id == item.user_id:
@@ -198,7 +202,7 @@ def disabletask(message):
         bot.send_message(chat_id=message.chat.id, text=f"Missing task ID")
 
 @bot.message_handler(func= lambda message: 'enable' in message.text )
-def disabletask(message):
+def edittask(message):
     ida = str(message.text).split()[-1]
     try:
         TasksList[int(ida)-1].enable=True
@@ -209,6 +213,10 @@ def disabletask(message):
     
 @bot.message_handler(commands=['showtasks'])
 def showtasks(message):
+    if message.chat.id not in USERlist:
+        mainthread = threading.Thread(target=tasks_loop,args=[message])
+        mainthread.start()
+        USERlist.append(message.chat.id)
     printer = ""
     for item in TasksList:
         if item.user_id == message.chat.id:
