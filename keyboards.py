@@ -32,7 +32,7 @@ def get_startup_keys():
 
 def get_starttask_keys(idtask: int):
     markup = InlineKeyboardMarkup()
-    markup.max_row_keys= 2
+    markup.row_width=2
     item1 = InlineKeyboardButton("Start task ✅", callback_data=f"t/starttask/{idtask}")
     item2 = InlineKeyboardButton("New task 📊", callback_data=f"createtask")
     item3 = InlineKeyboardButton("View my tasks 📝",callback_data="viewtasks")
