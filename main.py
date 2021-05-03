@@ -53,11 +53,11 @@ def crtask_quoteset(message):
 
 def crtask_priceset(message):
     global NewCryptoTask
-    try:
-        NewCryptoTask.price = float(message.text)
-        echo = bot.send_message(chat_id=message.chat.id, text=f"Should the price rise to this value or fall? ",reply_markup=keyboards.get_raise_fall_kb())
-    except:
-        echo = bot.send_message(chat_id=message.chat.id, text="Price is incorrect! Task creation aborted! Send /createtask again")
+    #       try:
+    NewCryptoTask.price = float(message.text)
+    echo = bot.send_message(chat_id=message.chat.id, text=f"Should the price rise to this value or fall? ",reply_markup=keyboards.get_raise_fall_kb())
+    #except:
+    #   echo = bot.send_message(chat_id=message.chat.id, text=f"Price is incorrect! Task creation aborted! Send /createtask again.")
 
 
 def crtask_rofl(message,data):
@@ -89,13 +89,13 @@ def disable_task(message, idz):
 
 
 def edit_task(message,idz):
+    global NewCryptoTask
     if (message.chat.id == TasksList[int(idz)].user_id):
         TasksList[int(idz)].enable=False
-        bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}", reply_markup=None)
         echo = bot.send_message(chat_id=message.chat.id, text="For edit price send the new one.\nFor example: 0.0004010")
         NewCryptoTask = TasksList[int(idz)]
         TasksList.remove(NewCryptoTask)
-        bot.register_next_step_handler(message=echo,callback=crtask_rofl)
+        bot.register_next_step_handler(message=echo,callback=crtask_priceset)
     else: raise Exception("No such task id from this user")
     
 
@@ -138,10 +138,11 @@ def callback_query(call):
         if call.data == "CreateRaise" or call.data == "CreateFall":
             crtask_rofl(call.message, call.data)
         elif "t/" in call.data:
-            idtask = int(str(call.data).split('/')[-1])-1
+            idtask = int(str(call.data).split('/')[-1])
             if "disable" in call.data:
                 disable_task(call.message,idtask)
             elif "edittask" in call.data:
+                bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}", reply_markup=None)
                 edit_task(call.message, idtask)
             elif "removetask" in call.data:
                 remove_task(call.message, idtask)
@@ -185,7 +186,7 @@ def stoptasks(message):
 
 @bot.message_handler(func= lambda message: 'disable' in message.text )
 def disabletask(message):
-    ida = str(message.text).split()[-1]
+    ida = int(str(message.text).split()[-1])
     try:
         TasksList[int(ida)-1].enable=False
         bot.send_message(chat_id=message.chat.id, text=f"Task #{ida} have stopped.")
@@ -195,7 +196,7 @@ def disabletask(message):
 
 @bot.message_handler(func= lambda message: 'edittask' in message.text )
 def disabletask(message):
-    ida = str(message.text).split()[-1]
+    ida = int(str(message.text).split()[-1])
     try:
         edit_task(message,ida)
     except:
