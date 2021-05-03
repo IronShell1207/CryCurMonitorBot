@@ -118,14 +118,14 @@ def edit_task(message, idz: int = -1):
             for item in TasksList:
                 if received_id == item.id and item.user_id == message.chat.id:
                     idz = item.id
-                    TasksList[idz].enable = False
-                    echo = bot.send_message(chat_id=message.chat.id, text="For edit price send the new one.\nFor example: 56000")
-                    NewCryptoTask = TasksList[idz]
-                    TasksList.remove(NewCryptoTask)
-                    bot.register_next_step_handler(message=echo,callback=crtask_priceset)
             if idz == -1:
                 bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
                 return
+        TasksList[idz].enable = False
+        echo = bot.send_message(chat_id=message.chat.id, text="For edit price send the new one.\nFor example: 56000")
+        NewCryptoTask = TasksList[idz]
+        TasksList.remove(NewCryptoTask)
+        bot.register_next_step_handler(message=echo,callback=crtask_priceset)
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
     
@@ -138,14 +138,15 @@ def remove_task(message, idz: int = -1):
             for item in TasksList:
                 if received_id == item.id and item.user_id == message.chat.id:
                     idz = item.id
-                    item = TasksList[idz]
-                    item.enable=False
-                    bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
-                    TasksList.remove(item)
-                    CT.write_json_tasks(TasksList)
+                    
             if idz == -1:
                 bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
                 return
+        item = TasksList[idz]
+        item.enable=False
+        bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
+        TasksList.remove(item)
+        CT.write_json_tasks(TasksList)
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
     
@@ -157,12 +158,12 @@ def start_task(message, idz: int = -1):
             received_id = int(str(message.text).split()[-1])
             for item in TasksList:
                 if received_id == item.id and item.user_id == message.chat.id:
-                    idz = item.id
-                    TasksList[idz].enable = True
-                    bot.send_message(chat_id=message.chat.id, text=f"✅ Pair {TasksList[idz].base}/{TasksList[idz].quote} is now monitoring!")
+                    idz = item.id   
             if idz == -1:
                 bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
                 return
+        TasksList[idz].enable = True
+        bot.send_message(chat_id=message.chat.id, text=f"✅ Pair {TasksList[idz].base}/{TasksList[idz].quote} is now monitoring!")
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
 
