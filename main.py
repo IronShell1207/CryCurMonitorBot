@@ -96,17 +96,22 @@ def crtask_rofl(message, data):
 def handshit(message):
     bot.send_message(chat_id=message.chat.id, text="I dont accept this. I will send it to my admin!!")
     
+def id_task_finder(in_id: int, user_id: int):
+    i = 0
+    for item in TasksList:
+        if item.id == in_id and item.user_id == user_id:
+            return i
+        i+=1
+    return -1
+
 @bot.message_handler(func= lambda message: 'disable' in message.text, content_types=['text'])
 def disable_task(message, idz: int = -1):
     try:
+        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
+        idz = id_task_finder(idz, message.chat.id)
         if idz == -1:
-            received_id = int(str(message.text).split()[-1])
-            for item in TasksList:
-                if received_id == item.id and item.user_id == message.chat.id:
-                    idz = item.id
-            if idz == -1:
-                bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
-                return   
+            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
+            return   
         TasksList[idz].enable=False
         bot.send_message(chat_id=message.chat.id, text="❗️Monitoring disabled for selected ID")
         CT.write_json_tasks(TasksList)
@@ -117,14 +122,11 @@ def disable_task(message, idz: int = -1):
 def edit_task(message, idz: int = -1):
     global NewCryptoTask
     try:
+        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
+        idz = id_task_finder(idz, message.chat.id)
         if idz == -1:
-            received_id = int(str(message.text).split()[-1])
-            for item in TasksList:
-                if received_id == item.id and item.user_id == message.chat.id:
-                    idz = item.id
-            if idz == -1:
-                bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
-                return
+            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
+            return
         TasksList[idz].enable = False
         echo = bot.send_message(chat_id=message.chat.id, text="For edit price send the new one.\nFor example: 56000")
         NewCryptoTask = TasksList[idz]
@@ -137,15 +139,11 @@ def edit_task(message, idz: int = -1):
 @bot.message_handler(func= lambda message: 'remove' in message.text, content_types=['text'])
 def remove_task(message, idz: int = -1):
     try:
+        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
+        idz = id_task_finder(idz, message.chat.id)
         if idz == -1:
-            received_id = int(str(message.text).split()[-1])
-            for item in TasksList:
-                if received_id == item.id and item.user_id == message.chat.id:
-                    idz = item.id
-                    
-            if idz == -1:
-                bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
-                return
+            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
+            return
         item = TasksList[idz]
         item.enable=False
         bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
@@ -158,14 +156,11 @@ def remove_task(message, idz: int = -1):
 @bot.message_handler(func= lambda message: 'start' in message.text, content_types=['text'])
 def start_task(message, idz: int = -1):
     try:
+        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
+        idz = id_task_finder(idz, message.chat.id)
         if idz == -1:
-            received_id = int(str(message.text).split()[-1])
-            for item in TasksList:
-                if received_id == item.id and item.user_id == message.chat.id:
-                    idz = item.id   
-            if idz == -1:
-                bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
-                return
+            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
+            return
         TasksList[idz].enable = True
         bot.send_message(chat_id=message.chat.id, text=f"✅ Pair {TasksList[idz].base}/{TasksList[idz].quote} is now monitoring!")
     except (ValueError):
