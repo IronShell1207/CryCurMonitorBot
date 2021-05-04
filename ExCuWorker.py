@@ -22,6 +22,7 @@ def getCurExRates():
             data = requests.get(url,headers=headers).text
             decode_data = json.loads(data)
             TimeLastUpdate = date + timedelta(seconds=160)
+            print(f'[{datetime.datetime.now().time()}] Crypto data have been updated.')
             for item in decode_data['pairs']:
                 CurExRates.append(item)
     return CurExRates
