@@ -84,7 +84,7 @@ def crtask_rofl(message, data):
             return
     bot.send_message(chat_id=message.chat.id, 
     text=f"""Your task succesuffuly created. \nDetails of your task:
-    {NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /startalltasks""", 
+    {NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /turnontasks""", 
                     reply_markup=keyboards.get_starttask_keys(NewCryptoTask.id))
     TasksList.append(NewCryptoTask)
     CT.write_json_tasks(TasksList)
@@ -167,7 +167,7 @@ def start_task(message, idz: int = -1):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
 
 # Не требует доработки
-@bot.message_handler(commands=['startalltasks'])
+@bot.message_handler(commands=['turnontasks'])
 def startALLtasks(message):
     if len(TasksList) > 0:
         if message.chat.id not in USERlist:
@@ -257,7 +257,7 @@ def help(message):
     echo = bot.send_message(chat_id=message.chat.id,
                             text="""Commands list:
 1. Create new monitoring task - /createtask
-2. Start all monitoring tasks - /startalltasks
+2. Start all monitoring tasks - /turnontasks
 3. Stop all monitoring tasks - /stopalltasks
 4. Show all tasks /showtasks
 5. Disable monitoring by ID - /disable <id>
