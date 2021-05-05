@@ -110,6 +110,8 @@ def id_task_finder(in_id: int, user_id: int):
 def task_manage_handler(message):
     try:
         match3 = commandsRE.match(message.text)
+        global NewCryptoTask
+        global TasksList
         taskz = match3.group(1)
         idz = id_task_finder(int(match3.group(2)), message.chat.id)
         if idz == -1:
