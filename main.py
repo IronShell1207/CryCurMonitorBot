@@ -151,7 +151,8 @@ def pricechecker(message):
         quotecur = pairpattern.group(2).upper()
         if ExCuWorker.isCurrencyValid(basecur, True) and ExCuWorker.isCurrencyValid(quotecur, False):
             pricecur = ExCuWorker.monitor(basecoin=basecur, quotecoin=quotecur)
-            bot.send_message(chat_id=message.chat.id ,text=f"Current price for pair {basecur}/{quotecur}: {pricecur}")
+            pricecur = pricecur if pricecur>1 else "{:^10.8f}".format(pricecur)
+            bot.send_message(chat_id=message.chat.id ,text=f"💸Current price for pair {basecur}/{quotecur}: {pricecur}")
         else:
             bot.send_message(chat_id=message.chat.id ,text=f"I can't find pair {basecur}/{quotecur} in the list")
     else:
