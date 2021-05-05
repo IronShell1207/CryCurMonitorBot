@@ -190,6 +190,8 @@ def stoptasks(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     try:
+        global NewCryptoTask
+        global TasksList
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
         if call.data == "CreateRaise" or call.data == "CreateFall":
             crtask_rofl(call.message, call.data)
@@ -205,10 +207,7 @@ def callback_query(call):
         elif "t/" in call.data:
             received_id = int(str(call.data).split('/')[-1])
             #Сразу узнаем received_id для всех операций ниже
-            RealID = -1
-            for item in TasksList:
-                if received_id == item.id and item.user_id == call.message.chat.id:
-                    RealID = item.id
+            RealID = id_task_finder(received_id, call.message.chat.id)
             if RealID == -1:
                 bot.send_message(chat_id=call.message.chat.id, text="You have sent wrong task id!")
                 return
