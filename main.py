@@ -19,6 +19,8 @@ TasksList = []
 tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' else config.TOKEN_px
 bot = telebot.TeleBot(token=tof)
 
+commandsRE = re.compile("/(\S+)\s(\d+)")
+
 mainthread = threading.Thread()
 sleeptimer = 90
 USERlist=[]
@@ -104,65 +106,33 @@ def id_task_finder(in_id: int, user_id: int):
         i+=1
     return -1
 
-@bot.message_handler(func= lambda message: 'disable' in message.text, content_types=['text'])
-def disable_task(message, idz: int = -1):
+@bot.message_handler(func= lambda message: commandsRE.match(message.text) != None)
+def task_manage_handler(message):
     try:
-        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
-        idz = id_task_finder(idz, message.chat.id)
+        match3 = commandsRE.match(message.text)
+        taskz = match3.group(1)
+        idz = id_task_finder(int(match3.group(2)), message.chat.id)
         if idz == -1:
             bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
             return   
-        TasksList[idz].enable=False
-        bot.send_message(chat_id=message.chat.id, text="❗️Monitoring disabled for selected ID")
-        CT.write_json_tasks(TasksList)
-    except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
-
-@bot.message_handler(func= lambda message: 'edittask' in message.text, content_types=['text'] )
-def edit_task(message, idz: int = -1):
-    global NewCryptoTask
-    try:
-        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
-        idz = id_task_finder(idz, message.chat.id)
-        if idz == -1:
-            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
-            return
-        TasksList[idz].enable = False
-        echo = bot.send_message(chat_id=message.chat.id, text="For edit price send the new one.\nFor example: 56000")
-        NewCryptoTask = TasksList[idz]
-        TasksList.remove(NewCryptoTask)
-        bot.register_next_step_handler(message=echo,callback=crtask_priceset)
-    except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
-    
-    
-@bot.message_handler(func= lambda message: 'remove' in message.text, content_types=['text'])
-def remove_task(message, idz: int = -1):
-    try:
-        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
-        idz = id_task_finder(idz, message.chat.id)
-        if idz == -1:
-            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
-            return
-        item = TasksList[idz]
-        item.enable=False
-        bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
-        TasksList.remove(item)
-        CT.write_json_tasks(TasksList)
-    except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
-    
-
-@bot.message_handler(func= lambda message: 'start' in message.text, content_types=['text'])
-def start_task(message, idz: int = -1):
-    try:
-        idz = int(str(message.text).split()[-1]) if idz == -1 else idz
-        idz = id_task_finder(idz, message.chat.id)
-        if idz == -1:
-            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
-            return
-        TasksList[idz].enable = True
-        bot.send_message(chat_id=message.chat.id, text=f"✅ Pair {TasksList[idz].base}/{TasksList[idz].quote} is now monitoring!")
+        if (taskz == "start" or taskz == "enable"):
+            TasksList[idz].enable = True
+            bot.send_message(chat_id=message.chat.id, text=f"✅ Pair #{TasksList[idz].id} {TasksList[idz].base}/{TasksList[idz].quote} is now monitoring!")
+        elif (taskz == "disable" or taskz == "stop"):
+            TasksList[idz].enable = False
+            bot.send_message(chat_id=message.chat.id, text=f"❗️Monitoring disabled for #{TasksList[idz].id} {TasksList[idz].base}/{TasksList[idz].quote}")
+        elif (taskz == "edittask" or taskz == "edit"):
+            TasksList[idz].enable = False
+            echo = bot.send_message(chat_id=message.chat.id, text=f"You are editting pair: {TasksList[idz].base}/{TasksList[idz].quote}.\nFor edit price send the new one.\nFor example: 56000")
+            NewCryptoTask = TasksList[idz]
+            TasksList.remove(NewCryptoTask)
+            bot.register_next_step_handler(message=echo,callback=crtask_priceset)
+        elif (taskz == "remove" or taskz == "delete"):
+            item = TasksList[idz]
+            item.enable = False
+            bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
+            TasksList.remove(item)
+            CT.write_json_tasks(TasksList)
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
 
@@ -203,7 +173,7 @@ def callback_query(call):
             crtask_rofl(call.message, call.data)
         elif call.data == "createtask":
             createnewtask(call.message)
-        elif call.data == "startalltasks":
+        elif call.data == "turnontasks":
             startALLtasks(call.message)
         elif call.data == "stopalltasks":
             stoptasks(call.message)
@@ -221,13 +191,21 @@ def callback_query(call):
                 bot.send_message(chat_id=call.message.chat.id, text="You have sent wrong task id!")
                 return
             if "disable" in call.data:
-                disable_task(call.message, RealID)
+                TasksList[RealID].enable=False
+                bot.send_message(chat_id=call.message.chat.id, text="❗️Monitoring disabled for selected ID")
+                CT.write_json_tasks(TasksList)
             elif "edittask" in call.data:
-                edit_task(call.message, RealID)
+                TasksList[RealID].enable = False
+                echo = bot.send_message(chat_id=call.message.chat.id, text=f"You are editting pair: {TasksList[RealID].base}/{TasksList[RealID].quote}.\nFor edit price send the new one.\nFor example: 56000")
+                NewCryptoTask = TasksList[RealID]
+                TasksList.remove(NewCryptoTask)
+                bot.register_next_step_handler(message=echo, callback=crtask_priceset)
             elif "removetask" in call.data:
-                remove_task(call.message, RealID)
+                TasksList[RealID].enable = False
+                bot.send_message(chat_id=call.message.chat.id, text=f"❗️Monitoring disabled for #{TasksList[RealID].id} {TasksList[RealID].base}/{TasksList[RealID].quote}")
             elif "starttask" in call.data:
-                start_task(call.message, RealID)    
+                TasksList[RealID].enable = True
+                bot.send_message(chat_id=call.message.chat.id, text=f"✅ Pair {TasksList[RealID].base}/{TasksList[RealID].quote} is now monitoring!") 
     except (IndexError):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")  
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -249,7 +227,18 @@ def showtasks(message):
 def start(message):
     echo = bot.send_message(chat_id=message.chat.id, 
     text="Hello! I'm crypto currency exchange monitor bot. I can send you notification when your currency is raise or fall to setted value. \nFor create new task send: /createtask.",
-    reply_markup=keyboards.get_startup_keys())
+    reply_markup=keyboards.get_main_keyboard())
+
+@bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸"])
+def msg_kb_handler(message):
+    if message.text == "View my tasks 📝":
+        showtasks(message)
+    elif message.text == "Create new task 📊":
+        createnewtask(message)
+    elif message.text == "Start all tasks ▶️":
+        startALLtasks(message)
+    elif message.text == "Disable all tasks ⏸":
+        stoptasks(message)
 
 
 @bot.message_handler(commands=['help'])
@@ -261,8 +250,9 @@ def help(message):
 3. Stop all monitoring tasks - /stopalltasks
 4. Show all tasks /showtasks
 5. Disable monitoring by ID - /disable <id>
-6. Start monitoring by ID - /start <id>
-7. Edit task - /edit <id>""")
+6. Start monitoring by ID - /enable <id>
+7. Edit task - /edit <id>
+8. Delete task /remove <id>""")
     
 
 

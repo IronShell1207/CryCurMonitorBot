@@ -1,4 +1,4 @@
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import telebot
 
 def get_raise_fall_kb():
@@ -41,8 +41,18 @@ def get_starttask_keys(idtask: int):
 
 def get_en_dis_all_keys():
     markup = InlineKeyboardMarkup()
-    item1 = InlineKeyboardButton("Start all tasks ▶️", callback_data="startalltasks")
+    item1 = InlineKeyboardButton("Start all tasks ▶️", callback_data="turnontasks")
     item2 = InlineKeyboardButton("Disable all tasks ⏸", callback_data="stopalltasks")
     markup.add(item1, item2)
     return markup
 
+
+def get_main_keyboard():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    
+    item1 = KeyboardButton("View my tasks 📝")
+    item2 = KeyboardButton("Create new task 📊")
+    item3 = KeyboardButton("Start all tasks ▶️")
+    item4 = KeyboardButton("Disable all tasks ⏸")
+    markup.add(item1, item2, item3, item4)
+    return markup
