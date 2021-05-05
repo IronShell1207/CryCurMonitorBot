@@ -21,6 +21,7 @@ bot = telebot.TeleBot(token=tof)
 
 commandsRE = re.compile("/(\S+)\s(\d+)")
 
+
 mainthread = threading.Thread()
 sleeptimer = 90
 USERlist=[]
@@ -138,6 +139,24 @@ def task_manage_handler(message):
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
 
+@bot.message_handler(commands=["/checkprice"])
+def pricecheck(message):
+    echo = bot.send_message(chat_id=message.chat.id, text="To check current exchange rates send me currency pair.\n\nFor example: BTC/USDT or RVN/BTC.\nPlease observe this pattern")
+    bot.register_next_step_handler(message=echo, callback=pricechecker)
+
+def pricechecker(message):
+    pairpattern = re.compile(r'(\S+)/(\S+)').match(message.text)
+    if pairpattern != None:
+        basecur = pairpattern.group(1).upper()
+        quotecur = pairpattern.group(2).upper()
+        if ExCuWorker.isCurrencyValid(basecur, True) and ExCuWorker.isCurrencyValid(quotecur, False):
+            pricecur = ExCuWorker.monitor(basecoin=basecur, quotecoin=quotecur)
+            bot.send_message(chat_id=message.chat.id ,text=f"Current price for pair {basecur}/{quotecur}: {pricecur}")
+        else:
+            bot.send_message(chat_id=message.chat.id ,text=f"I can't find pair {basecur}/{quotecur} in the list")
+    else:
+        bot.send_message(chat_id=message.chat.id, text="You send wrong call.\n You must observe pattern!")
+    
 # Не требует доработки
 @bot.message_handler(commands=['turnontasks'])
 def startALLtasks(message):
@@ -231,7 +250,7 @@ def start(message):
     text="Hello! I'm crypto currency exchange monitor bot. I can send you notification when your currency is raise or fall to setted value. \nFor create new task send: /createtask.",
     reply_markup=keyboards.get_main_keyboard())
 
-@bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸"])
+@bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸", "Check price 💸"])
 def msg_kb_handler(message):
     if message.text == "View my tasks 📝":
         showtasks(message)
@@ -241,6 +260,8 @@ def msg_kb_handler(message):
         startALLtasks(message)
     elif message.text == "Disable all tasks ⏸":
         stoptasks(message)
+    elif message.text == "Check price 💸":
+        pricecheck(message)
 
 
 @bot.message_handler(commands=['help'])

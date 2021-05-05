@@ -48,11 +48,12 @@ def get_en_dis_all_keys():
 
 
 def get_main_keyboard():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     
     item1 = KeyboardButton("View my tasks 📝")
     item2 = KeyboardButton("Create new task 📊")
+    item5 = KeyboardButton("Check price 💸")
     item3 = KeyboardButton("Start all tasks ▶️")
     item4 = KeyboardButton("Disable all tasks ⏸")
-    markup.add(item1, item2, item3, item4)
+    markup.add(item1, item2,item5, item3, item4)
     return markup
