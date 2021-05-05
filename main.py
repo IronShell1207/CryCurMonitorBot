@@ -247,8 +247,13 @@ def showtasks(message):
 @bot.message_handler(commands=['start'])
 def start(message):
     echo = bot.send_message(chat_id=message.chat.id, 
-    text="Hello! I'm crypto currency exchange monitor bot. I can send you notification when your currency is raise or fall to setted value. \nFor create new task send: /createtask.",
+    text="Hello! I'm crypto currency exchange monitor bot. I can send you notification when your currency is raise or fall to setted value. \nFor create new task send: /createtask.\nFor get info send: /info\nFor get all available commands send: /help",
     reply_markup=keyboards.get_main_keyboard())
+
+@bot.message_handler(commands=['info'])
+def infohelp(message):
+    bot.send_message(chat_id=message.chat.id, 
+                     text=f"This bot is written on Python with pyTelegramBotApi library. This bot uses data from free API: coinlore.com. Data updates every 3-5 minutes, and if you get twice same notifications it's only because of old data on API server\n⛏ Developer: Ironshell\n🛸 Github: https://github.com/IronShell1207/CryCurMonitorBot\n\nIf bot is usefull for you, you can buy my a ☕️ and thx 2u).\n🥇ETH: 0xa35fbab442da4e65413045a4b9b147e2a0fc3e0c\n🎈LTC: LQiBdMeCNWAcSBEhc2QT3ffFz8a2t7zPcG")
 
 @bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸", "Check price 💸"])
 def msg_kb_handler(message):
