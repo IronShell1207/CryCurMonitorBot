@@ -151,7 +151,7 @@ def pricechecker(message):
         quotecur = pairpattern.group(2).upper()
         if ExCuWorker.isCurrencyValid(basecur, True) and ExCuWorker.isCurrencyValid(quotecur, False):
             pricecur = ExCuWorker.monitor(basecoin=basecur, quotecoin=quotecur)
-            pricecur = pricecur if pricecur>1 else "{:^10.8f}".format(pricecur)
+            pricecur = pricecur if pricecur>0.001 else "{:^10.8f}".format(pricecur)
             bot.send_message(chat_id=message.chat.id ,text=f"💸Current price for pair {basecur}/{quotecur}: {pricecur}")
         else:
             bot.send_message(chat_id=message.chat.id ,text=f"I can't find pair {basecur}/{quotecur} in the list")
@@ -289,8 +289,8 @@ def tasks_loop(message):
         for item in TasksList:
             if message.chat.id == item.user_id and item.enable==True:
                 getprice = ExCuWorker.monitor(basecoin=item.base, quotecoin=item.quote)
-                ipr = item.price if item.price>1 else "{:^10.8f}".format(item.price)
-                gpr = getprice if getprice>1 else "{:^10.8f}".format(getprice)
+                ipr = item.price if item.price>0.001 else "{:^10.8f}".format(item.price)
+                gpr = getprice if getprice>0.001 else "{:^10.8f}".format(getprice)
                 if item.rofl==True and getprice>item.price:
                     print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
                     bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))

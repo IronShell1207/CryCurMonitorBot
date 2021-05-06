@@ -24,7 +24,7 @@ class CryptoTask(object):
     
     def ToString(self) -> str:
         arr = ">" if self.rofl else "<"
-        pr = self.price if self.price>1 else "{:^10.8f}".format(self.price)
+        pr = self.price if self.price>0.001 else "{:^10.8f}".format(self.price)
         return f"Currency monitor task #{self.id}.\n\nEnabled: {self.enable}\nBase currency: {self.base}\nQuote currency: {self.quote}\nWaiting for price: {arr}{pr}"
     
     def ToShortStr(self) -> str:
