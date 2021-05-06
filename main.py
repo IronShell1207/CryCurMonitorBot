@@ -244,7 +244,7 @@ def callback_query(call):
             elif "removetask" in call.data:
                 item = TasksList[RealID]
                 item.enable = False
-                bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
+                bot.send_message(chat_id=call.message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
                 TasksList.remove(item)
                 CT.write_json_tasks(TasksList)
             elif "starttask" in call.data:
