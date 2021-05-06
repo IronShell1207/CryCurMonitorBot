@@ -32,6 +32,14 @@ if tasksjsn != None:
     TasksList=tasksjsn
 # Добавить обработку при завершении создания таска, удаление из списка и редактирования путем полного перезаписывания файла 
 
+def checkifnewuser(message):
+    for user in USERlist:
+        if user.user_id == message.chat.id:
+            return
+    mainthread = threading.Thread(target=tasks_loop,args=[message])
+    mainthread.start()
+    user = CT.UserSets(user_id=message.chat.id, notifytimer = 90)
+    USERlist.append(user)
 
 #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 #0-й этап
@@ -41,10 +49,11 @@ def createnewtask(message):
     global USERlist
     echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'")
     bot.register_next_step_handler(message=echo, callback=crtask_baseset)
-    if message.chat.id not in USERlist:
-        mainthread = threading.Thread(target=tasks_loop,args=[message])
-        mainthread.start()
-        USERlist.append(message.chat.id)
+    checkifnewuser(message)
+    #if message.chat.id not in USERlist:
+    #    mainthread = threading.Thread(target=tasks_loop,args=[message])
+    #    mainthread.start()
+    #    USERlist.append(message.chat.id)
 # 1-й этап Переадресация с main сюда
 def crtask_baseset(message):
     global NewCryptoTask
@@ -114,6 +123,12 @@ def task_manage_handler(message):
         global NewCryptoTask
         global TasksList
         taskz = match3.group(1)
+        idz = int(match3.group(2))
+        if (taskz == "settimer" or taskz == "timer"):
+            for useri in USERlist:
+                if message.chat.id == useri.user_id:
+                    useri.setnewtimer(idz)
+                    return
         idz = id_task_finder(int(match3.group(2)), message.chat.id)
         if idz == -1:
             bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
@@ -136,6 +151,7 @@ def task_manage_handler(message):
             bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
             TasksList.remove(item)
             CT.write_json_tasks(TasksList)
+        
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
 
@@ -162,10 +178,11 @@ def pricechecker(message):
 @bot.message_handler(commands=['turnontasks'])
 def startALLtasks(message):
     if len(TasksList) > 0:
-        if message.chat.id not in USERlist:
-            mainthread = threading.Thread(target=tasks_loop,args=[message])
-            mainthread.start()
-            USERlist.append(message.chat.id)
+        checkifnewuser(message)
+        #if message.chat.id not in USERlist:
+        #    mainthread = threading.Thread(target=tasks_loop,args=[message])
+        #    mainthread.start()
+        #    USERlist.append(message.chat.id)
         i = 0
         ix = 0
         for item in TasksList:
@@ -176,7 +193,8 @@ def startALLtasks(message):
                 else: 
                     ix += 1
                     #bot.send_message(chat_id=message.chat.id, text=f"Your pair {item.base}/{item.quote} is already going!")
-        bot.send_message(chat_id=message.chat.id, text=f"Your {i} monitoring tasks are started and {ix} tasks already ON ✅ \nFor check all your tasks send /showtasks")
+        alreadyon = f"and {ix} tasks already ON ✅" if ix>0 else ""
+        bot.send_message(chat_id=message.chat.id, text=f"Your {i} monitoring tasks are started {alreadyon}\nFor check all your tasks send /showtasks")
     else: 
         bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
 
@@ -224,8 +242,11 @@ def callback_query(call):
                 TasksList.remove(NewCryptoTask)
                 bot.register_next_step_handler(message=echo, callback=crtask_priceset)
             elif "removetask" in call.data:
-                TasksList[RealID].enable = False
-                bot.send_message(chat_id=call.message.chat.id, text=f"❗️Monitoring disabled for #{TasksList[RealID].id} {TasksList[RealID].base}/{TasksList[RealID].quote}")
+                item = TasksList[RealID]
+                item.enable = False
+                bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
+                TasksList.remove(item)
+                CT.write_json_tasks(TasksList)
             elif "starttask" in call.data:
                 TasksList[RealID].enable = True
                 bot.send_message(chat_id=call.message.chat.id, text=f"✅ Pair {TasksList[RealID].base}/{TasksList[RealID].quote} is now monitoring!") 
@@ -235,10 +256,11 @@ def callback_query(call):
     
 @bot.message_handler(commands=['showtasks'])
 def showtasks(message):
-    if message.chat.id not in USERlist:
-        mainthread = threading.Thread(target=tasks_loop,args=[message])
-        mainthread.start()
-        USERlist.append(message.chat.id)
+    checkifnewuser(message)
+    #if message.chat.id not in USERlist:
+    #    mainthread = threading.Thread(target=tasks_loop,args=[message])
+    #    mainthread.start()
+    #    USERlist.append(message.chat.id)
     printer = ""
     for item in TasksList:
         if item.user_id == message.chat.id:
@@ -302,7 +324,9 @@ def tasks_loop(message):
                 else: 
                     print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}")
             time.sleep(1)
-        time.sleep(sleeptimer)    
+        for users in USERlist:
+            if users.user_id == message.chat.id:
+                time.sleep(users.notifytimer) 
         #print("Alive")
                     
 

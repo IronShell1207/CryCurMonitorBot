@@ -21,7 +21,7 @@ class CryptoTask(object):
         self.price = price
         self.rofl = rofl
         self.enable = enable
-    
+        
     def ToString(self) -> str:
         arr = ">" if self.rofl else "<"
         pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
@@ -32,6 +32,7 @@ class CryptoTask(object):
         en = '✅' if self.enable==True else '🛑'
         pr = pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
         return f" {en} Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr}"
+
 
 class TaskEncoder(json.JSONEncoder):
     def default(self, Task):
@@ -66,3 +67,10 @@ def write_json_tasks(tasklist: list):
         except:
             return False
     
+class UserSets(object):
+    def __init__(self, user_id: int, notifytimer: int = 90):
+        self.user_id=user_id
+        self.notifytimer = notifytimer
+
+    def setnewtimer(self, timer: int):
+        self.notifytimer = timer
