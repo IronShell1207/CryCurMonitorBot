@@ -167,14 +167,16 @@ def startALLtasks(message):
             mainthread.start()
             USERlist.append(message.chat.id)
         i = 0
+        ix = 0
         for item in TasksList:
             if message.chat.id == item.user_id:
                 if item.enable==False:
                     item.enable=True
                     i+=1
                 else: 
-                    bot.send_message(chat_id=message.chat.id, text=f"Your pair {item.base}/{item.quote} is already going!")
-        bot.send_message(chat_id=message.chat.id, text=f"Your {i} monitoring tasks are started! For check all your tasks send /showtasks")
+                    ix += 1
+                    #bot.send_message(chat_id=message.chat.id, text=f"Your pair {item.base}/{item.quote} is already going!")
+        bot.send_message(chat_id=message.chat.id, text=f"Your {i} monitoring tasks are started and {ix} tasks already ON ✅ \nFor check all your tasks send /showtasks")
     else: 
         bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
 
