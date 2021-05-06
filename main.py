@@ -241,7 +241,7 @@ def showtasks(message):
     for item in TasksList:
         if item.user_id == message.chat.id:
             printer += item.ToShortStr()+"\n"
-    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring task list:\n{printer}", reply_markup=keyboards.get_en_dis_all_keys())
+    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring task list:\n\n{printer}", reply_markup=keyboards.get_en_dis_all_keys())
 
     
 @bot.message_handler(commands=['start'])
