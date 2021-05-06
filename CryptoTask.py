@@ -29,9 +29,9 @@ class CryptoTask(object):
     
     def ToShortStr(self) -> str:
         arr = ">" if self.rofl else "<"
-        en = 'enabled ✅' if self.enable==True else 'disabled 🛑'
+        en = '✅' if self.enable==True else '🛑'
         pr = pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
-        return f"Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr} is {en}"
+        return f" {en} Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr}"
 
 class TaskEncoder(json.JSONEncoder):
     def default(self, Task):
