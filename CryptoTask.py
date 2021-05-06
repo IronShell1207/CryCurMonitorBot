@@ -31,7 +31,7 @@ class CryptoTask(object):
         arr = ">" if self.rofl else "<"
         en = 'enabled ✅' if self.enable==True else 'disabled 🛑'
         pr = pr = self.price if self.price>1 else "{:^10.8f}".format(self.price)
-        return f"Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr} is {en}"
+        return f"🔰 Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr} is {en}"
 
 class TaskEncoder(json.JSONEncoder):
     def default(self, Task):
