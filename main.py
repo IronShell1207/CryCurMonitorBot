@@ -128,10 +128,11 @@ def task_manage_handler(message):
             for useri in USERlist:
                 if message.chat.id == useri.user_id:
                     useri.setnewtimer(idz)
+                    bot.send_message(chat_id=message.chat.id, text=f"📣Notification delay setted on {idz}sec.🕒")
                     return
         idz = id_task_finder(int(match3.group(2)), message.chat.id)
         if idz == -1:
-            bot.send_message(chat_id=message.chat.id, text="You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
+            bot.send_message(chat_id=message.chat.id, text="🚫You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
             return   
         if (taskz == "start" or taskz == "enable"):
             TasksList[idz].enable = True
@@ -279,6 +280,15 @@ def infohelp(message):
     bot.send_message(chat_id=message.chat.id, 
                      text=f"This bot is written on Python with pyTelegramBotApi library. This bot uses data from free API: coinlore.com. Data updates every 3-5 minutes, and if you get twice same notifications it's only because of old data on API server\n⛏ Developer: Ironshell\n🛸 Github: https://github.com/IronShell1207/CryCurMonitorBot\n\nIf bot is usefull for you, you can buy my a ☕️ and thx 2u).\n🥇ETH: 0xa35fbab442da4e65413045a4b9b147e2a0fc3e0c\n🎈LTC: LQiBdMeCNWAcSBEhc2QT3ffFz8a2t7zPcG")
 
+@bot.message_handler(commands=['setstyle'])
+def setstyle(message):
+    for user in USERlist:
+        if message.chat.id == user.user_id:
+            user.notifystyle = not user.notifystyle
+            prints = "📢 Notifications about exchange rates changes now shows separately" if user.notifystyle == False else "📢 Notifications about exchange rates changes now shows jointly in single message"
+            bot.send_message(chat_id=message.chat.id, text = prints)
+            return
+
 @bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸", "Check price 💸"])
 def msg_kb_handler(message):
     if message.text == "View my tasks 📝":
@@ -304,29 +314,41 @@ def help(message):
 5. Disable monitoring by ID - /disable <id>
 6. Start monitoring by ID - /enable <id>
 7. Edit task - /edit <id>
-8. Delete task /remove <id>""")
+8. Delete task /remove <id>
+9. Set notification delay (secounds) - /settimer <secs>""")
     
 
 
 def tasks_loop(message):
     while(True):
+        style = False
+        for users in USERlist:
+            if users.user_id == message.chat.id:
+                time.sleep(users.notifytimer) 
+                style = users.notifystyle
+        printer = ""
         for item in TasksList:
             if message.chat.id == item.user_id and item.enable==True:
                 getprice = ExCuWorker.monitor(basecoin=item.base, quotecoin=item.quote)
                 ipr = item.price if item.price>0.0001 else "{:^10.8f}".format(item.price)
                 gpr = getprice if getprice>0.0001 else "{:^10.8f}".format(getprice)
                 if item.rofl==True and getprice>item.price:
-                    print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
-                    bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                    #print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
+                    printer += f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!\n"
+                    if style == False:
+                        bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                        time.sleep(1)
                 elif item.rofl==False and getprice<item.price:
-                    print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
-                    bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                    #print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
+                    printer += f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!\n"
+                    if style == False:
+                        bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                        time.sleep(1)
                 else: 
-                    print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}")
-            time.sleep(1)
-        for users in USERlist:
-            if users.user_id == message.chat.id:
-                time.sleep(users.notifytimer) 
+                    pass
+                    #print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}") 
+        if printer != "" and style == True:
+            bot.send_message(chat_id=message.chat.id, text=f"💹Your updated exchange rates list:💹\n{printer}")        
         #print("Alive")
                     
 
