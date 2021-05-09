@@ -330,6 +330,9 @@ def tasks_loop(message):
         for item in TasksList:
             if message.chat.id == item.user_id and item.enable==True:
                 getprice = ExCuWorker.monitor(basecoin=item.base, quotecoin=item.quote)
+                if getprice == None:
+                    bot.send_message(chat_id= message.chat.id, text=f"Sorry, pair {item.base}/{item.quote} now unavailable!")
+                    return
                 ipr = item.price if item.price>0.0001 else "{:^10.8f}".format(item.price)
                 gpr = getprice if getprice>0.0001 else "{:^10.8f}".format(getprice)
                 if item.rofl==True and getprice>item.price:
