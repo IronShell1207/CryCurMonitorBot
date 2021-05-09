@@ -55,5 +55,6 @@ def get_main_keyboard():
     item5 = KeyboardButton("Check price 💸")
     item3 = KeyboardButton("Start all tasks ▶️")
     item4 = KeyboardButton("Disable all tasks ⏸")
-    markup.add(item1, item2,item5, item3, item4)
+    item6 = KeyboardButton("All exchange rates ✅")
+    markup.add(item1, item2,item5, item3, item4, item6)
     return markup

@@ -329,7 +329,7 @@ def setstyle(message):
             bot.send_message(chat_id=message.chat.id, text = prints)
             return
 
-@bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸", "Check price 💸"])
+@bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸", "Check price 💸","All exchange rates ✅"])
 def msg_kb_handler(message):
     if message.text == "View my tasks 📝":
         showtasks(message)
@@ -341,6 +341,8 @@ def msg_kb_handler(message):
         stoptasks(message)
     elif message.text == "Check price 💸":
         pricecheck(message)
+    elif message.text= "All exchange rates ✅":
+        getrates(message)
 
 
 @bot.message_handler(commands=['help'])
