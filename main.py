@@ -20,7 +20,7 @@ tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' 
 bot = telebot.TeleBot(token=tof)
 
 commandsRE = re.compile("/(\S+)\s(\d+)")
-
+createRE = re.compile("/(\S+)\s(\S{1,4})\s(\S{1,4})\s(\d+)\s(Fall|Raise)") #/createtask BTC USDT 56000 Raise
 
 mainthread = threading.Thread()
 sleeptimer = 90
@@ -47,13 +47,15 @@ def checkifnewuser(message):
 def createnewtask(message):
     global mainthread
     global USERlist
-    echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'")
-    bot.register_next_step_handler(message=echo, callback=crtask_baseset)
+    global NewCryptoTask
+    crm = createRE.match(message.text)
+    if crm != None:
+        fast_task_create(message,crm)
+    else:
+        echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'\nOr you can send full command for creation. For example:\n/createtask BTC USDT 56000 Raise")
+        bot.register_next_step_handler(message=echo, callback=crtask_baseset)
     checkifnewuser(message)
-    #if message.chat.id not in USERlist:
-    #    mainthread = threading.Thread(target=tasks_loop,args=[message])
-    #    mainthread.start()
-    #    USERlist.append(message.chat.id)
+
 # 1-й этап Переадресация с main сюда
 def crtask_baseset(message):
     global NewCryptoTask
@@ -117,6 +119,31 @@ def id_task_finder(in_id: int, user_id: int):
             return i
         i+=1
     return -1
+
+def fast_task_create(message, crm):
+    global NewCryptoTask
+    try:
+        basecur = crm.group(2).upper()
+        quotecur = crm.group(3).upper()
+        pricecur = float(crm.group(4))
+        roflcur = True if crm.group(5)=="Raise" else False
+        if ExCuWorker.isCurrencyValid(basecur,True) and ExCuWorker.isCurrencyValid(quotecur, False):
+            NewCryptoTask = CT.CryptoTask(user_id=message.chat.id, base=basecur, quote=quotecur, price=pricecur, rofl=roflcur)
+            for item in TasksList:
+                if NewCryptoTask.id == item.id:
+                    NewCryptoTask.id += 1
+            if item.base == NewCryptoTask.base and item.quote == NewCryptoTask.quote and item.rofl == NewCryptoTask.rofl and item.user_id == NewCryptoTask.user_id:
+                bot.send_message(chat_id=message.chat.id, text=f"You already have same task: {NewCryptoTask.base}/{NewCryptoTask.quote}.\n{item.ToString()}\n\You must edit or delete it!", reply_markup=keyboards.get_remove_edit_kb(item.id))
+                return
+            bot.send_message(chat_id=message.chat.id, 
+                text=f"""Your task succesuffuly created. \nDetails of your task:
+{NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /turnontasks""", 
+                reply_markup=keyboards.get_starttask_keys(NewCryptoTask.id))
+        TasksList.append(NewCryptoTask)
+        CT.write_json_tasks(TasksList) 
+    except (ValueError):
+        bot.send_message(chat_id=message.chat.id, text="Wrong price!")
+        #NewCryptoTask = CT.CryptoTask
 
 @bot.message_handler(func= lambda message: commandsRE.match(message.text) != None)
 def task_manage_handler(message):
@@ -310,6 +337,7 @@ def help(message):
     echo = bot.send_message(chat_id=message.chat.id,
                             text="""Commands list:
 1. Create new monitoring task - /createtask
+or /createtask <base> <quote> <price> <Raise|Fall>
 2. Start all monitoring tasks - /turnontasks
 3. Stop all monitoring tasks - /stopalltasks
 4. Show all tasks /showtasks
@@ -317,7 +345,8 @@ def help(message):
 6. Start monitoring by ID - /enable <id>
 7. Edit task - /edit <id>
 8. Delete task /remove <id>
-9. Set notification delay (secounds) - /settimer <secs>""")
+9. Set notification delay (secounds) - /settimer <secs>
+10. Change notification style from separate messages to single - /setstyle""")
     
 
 
