@@ -63,16 +63,18 @@ def crtask_baseset(message):
         echo = bot.send_message(chat_id=message.chat.id, text=f"Your base currency: {NewCryptoTask.base}. Now please send the quote currency (for example: 'USDT')")
         bot.register_next_step_handler(message=echo, callback=crtask_quoteset)
     else:
-        bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
+        bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name or exchange rates of that currency now unavailable!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
 #2-й этап    
 def crtask_quoteset(message):
     global NewCryptoTask
     NewCryptoTask.quote = message.text.upper()
     if ExCuWorker.isCurrencyValid(NewCryptoTask.quote, False):
-        echo = bot.send_message(chat_id=message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '0.33')")
+        expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
+        ipr = expr if expr>0.0001 else "{:^10.8f}".format(expr)
+        echo = bot.send_message(chat_id=message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{ipr}1')")
         bot.register_next_step_handler(message=echo,callback=crtask_priceset)
     else:
-        bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
+        bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name or exchange rates of that pair now unavailable!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
 #3Й-этап
 def crtask_priceset(message):
     global NewCryptoTask
