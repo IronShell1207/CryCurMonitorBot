@@ -337,20 +337,20 @@ def tasks_loop(message):
                 ipr = item.price if item.price>0.0001 else "{:^10.8f}".format(item.price)
                 gpr = getprice if getprice>0.0001 else "{:^10.8f}".format(getprice)
                 if item.rofl==True and getprice>item.price:
-                    #print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
+                    print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
                     printer += f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!\n"
                     if style == False:
                         bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
                         time.sleep(1)
                 elif item.rofl==False and getprice<item.price:
-                    #print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
+                    print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
                     printer += f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!\n"
                     if style == False:
                         bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
                         time.sleep(1)
                 else: 
                     pass
-                    #print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}") 
+                    print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}") 
         if printer != "" and style == True:
             bot.send_message(chat_id=message.chat.id, text=f"💹Your updated exchange rates list:💹\n{printer}")        
         #print("Alive")
