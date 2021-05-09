@@ -341,7 +341,7 @@ def msg_kb_handler(message):
         stoptasks(message)
     elif message.text == "Check price 💸":
         pricecheck(message)
-    elif message.text= "All exchange rates ✅":
+    elif message.text == "All exchange rates ✅":
         getrates(message)
 
 
