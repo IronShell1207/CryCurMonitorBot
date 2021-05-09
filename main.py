@@ -284,6 +284,17 @@ def callback_query(call):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")  
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     
+@bot.message_handler(commands=['getrates'])
+def getrates(message):
+    printer = ""
+    for item in TasksList:
+        if item.user_id == message.chat.id: 
+            cur = ExCuWorker.monitor(item.base, item.quote)
+            printer += f"▫️ [ID #{item.id}] {item.base}/{item.quote} - {cur}\n"
+    if printer!="":
+        bot.send_message(chat_id=message.chat.id, text=f"📈 Your currency exchange rates, based on your tasks: 📉\n\n{printer}")
+            
+    
 @bot.message_handler(commands=['showtasks'])
 def showtasks(message):
     checkifnewuser(message)
@@ -346,7 +357,8 @@ or /createtask <base> <quote> <price> <Raise|Fall>
 7. Edit task - /edit <id>
 8. Delete task /remove <id>
 9. Set notification delay (secounds) - /settimer <secs>
-10. Change notification style from separate messages to single - /setstyle""")
+10. Change notification style from separate messages to single - /setstyle
+11. Get all current exchange rates - /getrates""")
     
 
 
@@ -370,13 +382,13 @@ def tasks_loop(message):
                 gpr = getprice if getprice>0.0001 else "{:^10.8f}".format(getprice)
                 if item.rofl==True and getprice>item.price:
                     print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
-                    printer += f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!\n"
+                    printer += f"🔺 [ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!\n"
                     if style == False:
                         bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
                         time.sleep(1)
                 elif item.rofl==False and getprice<item.price:
                     print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
-                    printer += f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!\n"
+                    printer += f"🔻 [ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!\n"
                     if style == False:
                         bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
                         time.sleep(1)
@@ -384,7 +396,7 @@ def tasks_loop(message):
                     pass
                     print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}") 
         if printer != "" and style == True:
-            bot.send_message(chat_id=message.chat.id, text=f"💹Your updated exchange rates list:💹\n{printer}")
+            bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}")
         time.sleep(timecount)       
         #print("Alive")
                     
