@@ -322,6 +322,11 @@ def help(message):
 def tasks_loop(message):
     while(True):
         style = False
+        timecount = 90
+        for users in USERlist:
+            if users.user_id == message.chat.id:
+                timecount = users.notifytimer
+                style = users.notifystyle  
         printer = ""
         for item in TasksList:
             if message.chat.id == item.user_id and item.enable==True:
@@ -336,23 +341,20 @@ def tasks_loop(message):
                     print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
                     printer += f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!\n"
                     if style == False:
-                        bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
                         time.sleep(1)
                 elif item.rofl==False and getprice<item.price:
                     print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
                     printer += f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!\n"
                     if style == False:
-                        bot.send_message(chat_id=message.chat.id, text = f"Your pair {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
                         time.sleep(1)
                 else: 
                     pass
                     print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}") 
         if printer != "" and style == True:
             bot.send_message(chat_id=message.chat.id, text=f"💹Your updated exchange rates list:💹\n{printer}")
-        for users in USERlist:
-            if users.user_id == message.chat.id:
-                time.sleep(users.notifytimer) 
-                style = users.notifystyle        
+        time.sleep(timecount)       
         #print("Alive")
                     
 
