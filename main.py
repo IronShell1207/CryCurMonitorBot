@@ -72,7 +72,6 @@ def crtask_quoteset(message):
     NewCryptoTask.quote = message.text.upper()
     if ExCuWorker.isCurrencyValid(NewCryptoTask.quote, False):
         expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
-        ipr = expr if expr>0.0001 else "{:^10.8f}".format(expr)
         echo = bot.send_message(chat_id=message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{ipr}1')")
         bot.register_next_step_handler(message=echo,callback=crtask_priceset)
     else:
@@ -165,14 +164,15 @@ def task_manage_handler(message):
             return   
         if (taskz == "start" or taskz == "enable"):
             TasksList[idz].enable = True
-            bot.send_message(chat_id=message.chat.id, text=f"✅ Pair #{TasksList[idz].id} {TasksList[idz].base}/{TasksList[idz].quote} is now monitoring!")
+            bot.send_message(chat_id=message.chat.id, text=f"✅ Pair {TasksList[idz].ToShortId()} is now monitoring!")
         elif (taskz == "disable" or taskz == "stop"):
             TasksList[idz].enable = False
-            bot.send_message(chat_id=message.chat.id, text=f"❗️Monitoring disabled for #{TasksList[idz].id} {TasksList[idz].base}/{TasksList[idz].quote}")
+            bot.send_message(chat_id=message.chat.id, text=f"❗️Monitoring disabled for {TasksList[idz].ToShortId()}")
         elif (taskz == "edittask" or taskz == "edit"):
             TasksList[idz].enable = False
-            echo = bot.send_message(chat_id=message.chat.id, text=f"You are editting pair: {TasksList[idz].base}/{TasksList[idz].quote}.\nFor edit price send the new one.\nFor example: 56000")
             NewCryptoTask = TasksList[idz]
+            expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
+            echo = bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}.\nFor edit price send the new one.\nFor example: {expr}")
             TasksList.remove(NewCryptoTask)
             bot.register_next_step_handler(message=echo,callback=crtask_priceset)
         elif (taskz == "remove" or taskz == "delete"):
@@ -185,7 +185,7 @@ def task_manage_handler(message):
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
 
-@bot.message_handler(commands=["/checkprice"])
+@bot.message_handler(commands=["checkprice"])
 def pricecheck(message):
     echo = bot.send_message(chat_id=message.chat.id, text="To check current exchange rates send me currency pair.\n\nFor example: BTC/USDT or RVN/BTC.\nPlease observe this pattern")
     bot.register_next_step_handler(message=echo, callback=pricechecker)
@@ -243,6 +243,10 @@ def callback_query(call):
         global NewCryptoTask
         global TasksList
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
+        taskre = re.compile('t/(\w+)/(\d+)')
+        taskUDre = re.compile('t/(\w+)(\d+)/(\d+)')
+        marhreEdUD = taskUDre.match(call.data)
+        mathretask = taskre.match(call.data)
         if call.data == "CreateRaise" or call.data == "CreateFall":
             crtask_rofl(call.message, call.data)
         elif call.data == "createtask":
@@ -253,31 +257,45 @@ def callback_query(call):
             stoptasks(call.message)
         elif call.data == "viewtasks":
             showtasks(call.message)
+        elif marhreEdUD != None:
+            procent = int(marhreEdUD.group(2))/100
+            received_id = int(marhreEdUD.group(3))
+            #Сразу узнаем received_id для всех операций ниже
+            RealID = id_task_finder(received_id, call.message.chat.id)
+            if marhreEdUD.group(1) == "up":
+                TasksList[RealID].price = TasksList[RealID].price *(1+procent)
+                bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved to {TasksList[RealID].price} for {TasksList[RealID].ToShortId()}")
+                return
+            elif marhreEdUD.group(1) == "dn":
+                TasksList[RealID].price = TasksList[RealID].price *(1-procent)
+                bot.send_message(chat_id=message.chat.id, text=f"☑️ Trigger moved to {TasksList[RealID].price} for {TasksList[RealID].ToShortId()}")
+                return
         #Функции ниже предназначены для обработки взаимодействий связанных с тасками напрямую
-        elif "t/" in call.data:
-            received_id = int(str(call.data).split('/')[-1])
+        elif mathretask != None:
+            received_id = int(mathretask.group(2))
             #Сразу узнаем received_id для всех операций ниже
             RealID = id_task_finder(received_id, call.message.chat.id)
             if RealID == -1:
                 bot.send_message(chat_id=call.message.chat.id, text="You have sent wrong task id!")
                 return
-            if "disable" in call.data:
+            if  mathretask.group(1) == "disable":
                 TasksList[RealID].enable=False
                 bot.send_message(chat_id=call.message.chat.id, text="❗️Monitoring disabled for selected ID")
                 CT.write_json_tasks(TasksList)
-            elif "edittask" in call.data:
+            elif mathretask.group(1) == "edittask":
                 TasksList[RealID].enable = False
-                echo = bot.send_message(chat_id=call.message.chat.id, text=f"You are editting pair: {TasksList[RealID].base}/{TasksList[RealID].quote}.\nFor edit price send the new one.\nFor example: 56000")
                 NewCryptoTask = TasksList[RealID]
+                expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
+                echo = bot.send_message(chat_id=call.message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}.\nFor edit price send the new one.\nFor example: {expr}")
                 TasksList.remove(NewCryptoTask)
                 bot.register_next_step_handler(message=echo, callback=crtask_priceset)
-            elif "removetask" in call.data:
+            elif mathretask.group(1) == "removetask":
                 item = TasksList[RealID]
                 item.enable = False
                 bot.send_message(chat_id=call.message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
                 TasksList.remove(item)
                 CT.write_json_tasks(TasksList)
-            elif "starttask" in call.data:
+            elif mathretask.group(1) == "starttask":
                 TasksList[RealID].enable = True
                 bot.send_message(chat_id=call.message.chat.id, text=f"✅ Pair {TasksList[RealID].base}/{TasksList[RealID].quote} is now monitoring!") 
     except (IndexError):
@@ -386,13 +404,13 @@ def tasks_loop(message):
                     print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
                     printer += f"🔺 [ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!\n"
                     if style == False:
-                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id, True))
                         time.sleep(1)
                 elif item.rofl==False and getprice<item.price:
                     print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
                     printer += f"🔻 [ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!\n"
                     if style == False:
-                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id))
+                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id, False))
                         time.sleep(1)
                 else: 
                     pass

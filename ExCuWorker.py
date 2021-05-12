@@ -33,6 +33,7 @@ def monitor(basecoin: str, quotecoin: str):
         data = getCurExRates()
         for item in data:
             if (item['base']==basecoin and item['quote']==quotecoin):
+                item['price'] = item['price'] if item['price']>0.0001 else "{:^10.8f}".format(item['price'])
                 return item['price']
 
 
