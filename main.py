@@ -43,7 +43,7 @@ def checkifnewuser(message):
 
 #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 #0-й этап
-@bot.message_handler(commands=['createtask'])
+@bot.message_handler(commands=['createtask','create','newtask'])
 def createnewtask(message):
     global mainthread
     global USERlist
@@ -205,7 +205,7 @@ def pricechecker(message):
         bot.send_message(chat_id=message.chat.id, text="You send wrong call.\n You must observe pattern!")
     
 # Не требует доработки
-@bot.message_handler(commands=['turnontasks'])
+@bot.message_handler(commands=['turnontasks', 'startall', 'startalltasks'])
 def startALLtasks(message):
     if len(TasksList) > 0:
         checkifnewuser(message)
