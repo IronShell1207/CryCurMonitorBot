@@ -295,7 +295,7 @@ def getrates(message):
         bot.send_message(chat_id=message.chat.id, text=f"📈 Your currency exchange rates, based on your tasks: 📉\n\n{printer}")
             
     
-@bot.message_handler(commands=['showtasks'])
+@bot.message_handler(commands=['showtasks', 'viewtasks', 'checktasks'])
 def showtasks(message):
     checkifnewuser(message)
     #if message.chat.id not in USERlist:
