@@ -28,13 +28,14 @@ def getCurExRates():
     return CurExRates
 
 
-def monitor(basecoin: str, quotecoin: str):
+def monitor(basecoin: str, quotecoin: str) -> float:
     for i in range(4):
         data = getCurExRates()
         for item in data:
             if (item['base']==basecoin and item['quote']==quotecoin):
-                item['price'] = item['price'] if item['price']>0.0001 else "{:^10.8f}".format(item['price'])
-                return item['price']
+                price = float(item['price'])
+                price = price if price>0.0001 else "{:^10.8f}".format(price)
+                return price
 
 
 def isCurrencyValid(currency: str, baseOrQuote: bool) -> bool:
