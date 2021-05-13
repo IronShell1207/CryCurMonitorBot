@@ -270,7 +270,7 @@ def callback_query(call):
                 TasksList[RealID].price = TasksList[RealID].price *(1-procent)
                 bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved to {TasksList[RealID].price} for {TasksList[RealID].ToShortId()}")
                 return
-        #Функции ниже предназначены для обработки взаимодействий связанных с тасками напрямую
+        #Функции ниже предназначены для обработки взаимодействий связанных с тасками напрямую  s
         elif mathretask != None:
             received_id = int(mathretask.group(2))
             #Сразу узнаем received_id для всех операций ниже
