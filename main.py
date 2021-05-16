@@ -72,7 +72,7 @@ def crtask_quoteset(message):
     NewCryptoTask.quote = message.text.upper()
     if ExCuWorker.isCurrencyValid(NewCryptoTask.quote, False):
         expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
-        echo = bot.send_message(chat_id=message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{ipr}1')")
+        echo = bot.send_message(chat_id=message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{expr}')")
         bot.register_next_step_handler(message=echo,callback=crtask_priceset)
     else:
         bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name or exchange rates of that pair now unavailable!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
