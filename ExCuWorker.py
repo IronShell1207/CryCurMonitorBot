@@ -47,6 +47,15 @@ def isCurrencyValid(currency: str, baseOrQuote: bool) -> bool:
                 return True
     return False
 
+def getAllQuotes(currency: str):
+    quotes = []
+    for i in range(4):
+        data = getCurExRates()
+        for item in data:
+            if item['base']==currency and item['quote'] != None and item['quote'] not in quotes:
+                quotes.append(item['quote'])
+    return quotes
+                
 
 
 

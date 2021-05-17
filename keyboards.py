@@ -64,3 +64,10 @@ def get_main_keyboard():
     item6 = KeyboardButton("All exchange rates ✅")
     markup.add(item1, item2,item5, item3, item4, item6)
     return markup
+
+def get_quotes_keyboard(listitems: list):
+    markup = InlineKeyboardMarkup()
+    for item in listitems:
+        ikey = InlineKeyboardButton(item,callback_data=f"n/{item}")
+        markup.add(ikey)
+    return markup

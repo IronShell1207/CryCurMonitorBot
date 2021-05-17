@@ -21,6 +21,7 @@ bot = telebot.TeleBot(token=tof)
 
 commandsRE = re.compile("/(\S+)\s(\d+)")
 createRE = re.compile("/(\S+)\s(\S{1,4})\s(\S{1,4})\s(\d+)\s(Fall|Raise)") #/createtask BTC USDT 56000 Raise
+commandQuote = re.compile("n/(\S+)")
 
 mainthread = threading.Thread()
 sleeptimer = 90
@@ -62,8 +63,10 @@ def crtask_baseset(message):
     NewCryptoTask = CT.CryptoTask(user_id=message.chat.id)
     NewCryptoTask.base = message.text.upper()
     if ExCuWorker.isCurrencyValid(NewCryptoTask.base, True):
-        echo = bot.send_message(chat_id=message.chat.id, text=f"Your base currency: {NewCryptoTask.base}. Now please send the quote currency (for example: 'USDT')")
-        bot.register_next_step_handler(message=echo, callback=crtask_quoteset)
+        #echo = bot.send_message(chat_id=message.chat.id, text=f"Your base currency: {NewCryptoTask.base}. Now please send the quote currency (for example: 'USDT')")
+        #bot.register_next_step_handler(message=echo, callback=crtask_quoteset)
+        quotes = ExCuWorker.getAllQuotes(NewCryptoTask.base)
+        bot.send_message(chat_id=message.chat.id, text=f"Your base currency: {NewCryptoTask.base}. \nSelect the quote currency", reply_markup=keyboards.get_quotes_keyboard(quotes))
     else:
         bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name or exchange rates of that currency now unavailable!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
 #2-й этап    
@@ -247,6 +250,13 @@ def callback_query(call):
         taskUDre = re.compile('t/(\w+)(\d+)/(\d+)')
         marhreEdUD = taskUDre.match(call.data)
         mathretask = taskre.match(call.data)
+        commandQuoteMatch = commandQuote.match(call.data)
+        if commandQuoteMatch != None:
+            NewCryptoTask.quote = commandQuoteMatch.group(1)
+            expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
+            echo = bot.send_message(chat_id=call.message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{expr}')")
+            bot.register_next_step_handler(message=echo,callback=crtask_priceset)
+            return
         if call.data == "CreateRaise" or call.data == "CreateFall":
             crtask_rofl(call.message, call.data)
         elif call.data == "createtask":
