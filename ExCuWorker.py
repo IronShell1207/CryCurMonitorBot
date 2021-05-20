@@ -13,13 +13,13 @@ CurExRates = []
 #https://www.binance.com/api/v3/ticker/price?symbol=ETHUSDT
 
 
-def bin_getvalidCur(base: str, quote: str):
+def bin_getCur(base: str, quote: str) -> float:
     link_cur = f"https://binance.com/api/v3/ticker/price?symbol={base}{quote}"
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36"}
     datareq = requests.get(link_cur,headers=headers).text
     decode_cur = json.loads(datareq)
     if decode_cur['price'] != None:
-        return decode_cur['price']
+        return float(decode_cur['price'])
     else:
         return None
     
