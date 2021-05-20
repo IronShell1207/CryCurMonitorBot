@@ -365,17 +365,21 @@ def redalert(message):
 def redloop(message):
     while(True):
         currentc = ExCuWorker.bin_getCur("BTC","USDT")
-        if (currentc >= 30090):
-            os.system("termux-media-player play Untitled.mp3")
-            print('termux-media-player play Untitled.mp3')
-            for i in range(10):
-                os.system("termux-torch on")
-                print('termux-torch on')
-                time.sleep(500)
-                os.systema("termux-torch off")
-                print('termux-torch off')
-                time.sleep(800)
-                bot.send_message(chat_id=message.chat.id, text='RED ALLERT BTC CRASHED!')
+        try:
+            if (currentc >= 30090):
+            
+                os.system("termux-media-player play Untitled.mp3")
+                print('termux-media-player play Untitled.mp3')
+                for i in range(10):
+                    os.system("termux-torch on")
+                    print('termux-torch on')
+                    time.sleep(500)
+                    os.systema("termux-torch off")
+                    print('termux-torch off')
+                    time.sleep(800)
+                    bot.send_message(chat_id=message.chat.id, text='RED ALLERT BTC CRASHED!')
+        except Exception as e:
+            print(e)
         
     pass
     
