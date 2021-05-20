@@ -22,7 +22,7 @@ tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' 
 bot = telebot.TeleBot(token=tof)
 
 commandsRE = re.compile("/(\S+)\s(\d+)")
-createRE = re.compile("/(\S+)\s(\S{1,4})\s(\S{1,4})\s(\d+)\s(Fall|Raise)") #/createtask BTC USDT 56000 Raise
+createRE = re.compile("/(\S+)\s(\S{1,5})\s(\S{1,4})\s(\d+)\s(Fall|Raise)") #/createtask BTC USDT 56000 Raise
 commandQuote = re.compile("n/(\S+)")
 
 mainthread = threading.Thread()
@@ -354,6 +354,27 @@ def callback_query(call):
     except (IndexError):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")  
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    
+@bot.message_handler(commands=['redallert'])
+def redalert(message):
+    bot.send_message(chat_id=message.chat.id, text=f'BITCOIN RED ALLERT WAS ENABLED FOR 30000$')
+    mainthread = threading.Thread(target=redloop,args=[message])
+    mainthread.start()
+    
+    
+def redloop(message):
+    while(True):
+        currentc = ExCuWorker.bin_getCur("BTC","USDT")
+        if (currentc >= 30090):
+            os.system("termux-media-player play Untitled.mp3")
+            for i in range(10):
+                os.system("termux-torch on")
+                time.sleep(500)
+                os.systema("termux-torch off")
+                time.sleep(800)
+                bot.send_message(chat_id=message.chat.id, text='RED ALLERT BTC CRASHED!')
+        
+    pass
     
 @bot.message_handler(commands=['getrates'])
 def getrates(message):
