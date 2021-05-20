@@ -368,8 +368,8 @@ def redloop(message):
         try:
             if (currentc >= 30090):
             
-                os.system("termux-media-player play Untitled.mp3")
-                print('termux-media-player play Untitled.mp3')
+                #os.system("termux-media-player play Untitled.mp3")
+                #print('termux-media-player play Untitled.mp3')
                 for i in range(10):
                     os.system("termux-torch on")
                     print('termux-torch on')
