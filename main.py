@@ -12,6 +12,7 @@ import sys
 import itertools
 import datetime
 import re
+import subprocess
 
 import ExCuWorker
 import CryptoTask as CT
@@ -369,12 +370,12 @@ def redloop(message):
             if (currentc >= 30090):
             
                 #os.system("termux-media-player play Untitled.mp3")
-                #print('termux-media-player play Untitled.mp3')
+                #gprint('termux-media-player play Untitled.mp3')
                 for i in range(10):
-                    os.system("termux-torch on")
+                    output = subprocess.run(args=['termux-torch on'], capture_output=True).stdout
                     print('termux-torch on')
                     time.sleep(500)
-                    os.systema("termux-torch off")
+                    output = subprocess.run(args=['termux-torch off'], capture_output=True).stdout
                     print('termux-torch off')
                     time.sleep(800)
                     bot.send_message(chat_id=message.chat.id, text='RED ALLERT BTC CRASHED!')
