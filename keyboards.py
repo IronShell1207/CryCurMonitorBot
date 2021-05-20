@@ -47,9 +47,10 @@ def get_starttask_keys(idtask: int):
 
 def get_en_dis_all_keys():
     markup = InlineKeyboardMarkup()
-    item1 = InlineKeyboardButton("Start all tasks ▶️", callback_data="turnontasks")
-    item2 = InlineKeyboardButton("Disable all tasks ⏸", callback_data="stopalltasks")
-    markup.add(item1, item2)
+    item1 = InlineKeyboardButton("Start all ▶️", callback_data="turnontasks")
+    item2 = InlineKeyboardButton("Disable all ⏸", callback_data="stopalltasks")
+    item3 = InlineKeyboardButton("❗️Remove all❕", callback_data="removealltasks")
+    markup.add(item1, item2, item3)
     return markup
 
 

@@ -1,5 +1,6 @@
 import os
 import threading
+from typing import Counter
 from requests.api import get
 import telebot
 import json
@@ -225,7 +226,8 @@ def pricechecker(message):
         basecur = pairpattern.group(1).upper()
         quotecur = pairpattern.group(2).upper()
         if ExCuWorker.isCurrencyValid(basecur, True) and ExCuWorker.isCurrencyValid(quotecur, False):
-            pricecur = ExCuWorker.monitor(basecoin=basecur, quotecoin=quotecur)
+            #pricecur = ExCuWorker.monitor(basecoin=basecur, quotecoin=quotecur)
+            pricecur = ExCuWorker.bin_getCur(base=basecur, quote=quotecur)
             pricecur = pricecur if pricecur>0.001 else "{:^10.8f}".format(pricecur)
             bot.send_message(chat_id=message.chat.id ,text=f"💸Current price for pair {basecur}/{quotecur}: {pricecur}")
         else:
@@ -265,6 +267,17 @@ def stoptasks(message):
             item.enable=False
     bot.send_message(chat_id=message.chat.id, text="⛔️ All tasks are stopped.")
 
+def removealltasks(message):
+    i = 0
+    count = len(TasksList)
+    for i in range(count):
+        if TasksList[i].user_id == message.chat.id:
+            TasksList.remove(TasksList[i])
+            i-=1
+        else: 
+            i+=1
+    CT.write_json_tasks(TasksList)
+    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring list of {i} tasks was been destroyed!")
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
@@ -279,7 +292,8 @@ def callback_query(call):
         commandQuoteMatch = commandQuote.match(call.data)
         if commandQuoteMatch != None:
             NewCryptoTask.quote = commandQuoteMatch.group(1)
-            expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
+            expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote= NewCryptoTask.quote) 
+            #expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
             echo = bot.send_message(chat_id=call.message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{expr}')")
             bot.register_next_step_handler(message=echo,callback=crtask_priceset)
             return
@@ -291,6 +305,8 @@ def callback_query(call):
             startALLtasks(call.message)
         elif call.data == "stopalltasks":
             stoptasks(call.message)
+        elif call.data == "removealltasks":
+            removealltasks(call.message)
         elif call.data == "viewtasks":
             showtasks(call.message)
         elif marhreEdUD != None:
@@ -344,7 +360,8 @@ def getrates(message):
     printer = ""
     for item in TasksList:
         if item.user_id == message.chat.id: 
-            cur = ExCuWorker.monitor(item.base, item.quote)
+            cur = ExCuWorker.bin_getCur(base=item.base, quote= item.quote)
+            #cur = ExCuWorker.monitor(item.base, item.quote)
             printer += f"▫️ [ID #{item.id}] {item.base}/{item.quote} - {cur}\n"
     if printer!="":
         bot.send_message(chat_id=message.chat.id, text=f"📈 Your currency exchange rates, based on your tasks: 📉\n\n{printer}")
