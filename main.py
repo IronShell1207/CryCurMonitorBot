@@ -17,7 +17,8 @@ import subprocess
 import ExCuWorker
 import CryptoTask as CT
 import keyboards
-import recombs as res
+import recombos
+
 
 TasksList = []
 tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' else config.TOKEN_px
@@ -52,6 +53,44 @@ def checkifnewuser(message):
 
 #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 #0-й этап
+@bot.message_handler(func= lambda message: 'createtask' in message.text or 'create' in message.text or 'newtask' in message.text)
+def create_task_handler(message):
+    global NewCryptoTask
+    try:
+        NewCryptoTask = CT.CryptoTask(user_id=message.chat.id)
+        cmb = recombos.create_re_full.match(message.text)
+        if cmb != None:
+            NewCryptoTask.base = cmb.group(2).upper()
+            NewCryptoTask.quote = cmb.group(4).upper()
+            NewCryptoTask.price =  float(cmb.group(5)) if float(cmb.group(5))>0.001 else "{:^10.8f}".format(float(cmb.group(5)))
+            NewCryptoTask.rofl = True if cmb.group(6) == "+" else False
+            bot.send_message(chat_id=message.chat.id, 
+            text=f"""Your task succesuffuly created. \nDetails of your task:\n{NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /turnontasks""", 
+            reply_markup=keyboards.get_starttask_keys(NewCryptoTask.id))
+            TasksList.append(NewCryptoTask)
+            CT.write_json_tasks(TasksList)
+            return
+        cmb = recombos.create_re_price.match(message.text)
+        if cmb != None:
+            NewCryptoTask.base = cmb.group(2).upper()
+            NewCryptoTask.quote = cmb.group(4).upper()
+            NewCryptoTask.price =  float(cmb.group(5)) if float(cmb.group(5))>0.001 else "{:^10.8f}".format(float(cmb.group(5)))
+            echo = bot.send_message(chat_id=message.chat.id, text=f"Pair: {NewCryptoTask.base}\{NewCryptoTask.quote}\nPrice: {NewCryptoTask.price}.\nShould the price rise or fall to this price?", reply_markup = keyboards.get_raise_fall_kb())
+            return
+        cmb = recombos.create_re_pair.match(message.text)
+        if cmb != None:
+            NewCryptoTask.base = cmb.group(2).upper()
+            NewCryptoTask.quote = cmb.group(4).upper()
+            echo = bot.send_message(chat_id= message.chat.id, text=f"Task creation.\nYour pair is {NewCryptoTask.base}\{NewCryptoTask.quote}.\nNow send the price, which you want to get. If exchange rates of this pair gets to this price you will get the notifications.\nExample: {priceex}")
+            bot.register_next_step_handler(message=echo, callback=crtask_priceset)
+            return
+        echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'\nOr you can send full command for creation. For example:\n/createtask BTC USDT 56000 Raise")
+        bot.register_next_step_handler(message=echo, callback=crtask_baseset)
+    except (ValueError):
+        bot.send_message(chat_id=message.chat.id, text="Error. You have sent wrong value.")
+
+    
+"""
 @bot.message_handler(commands=['createtask','create','newtask'])
 def createnewtask(message):
     global mainthread
@@ -64,7 +103,7 @@ def createnewtask(message):
         echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'\nOr you can send full command for creation. For example:\n/createtask BTC USDT 56000 Raise")
         bot.register_next_step_handler(message=echo, callback=crtask_baseset)
     checkifnewuser(message)
-
+"""
 # 1-й этап Переадресация с main сюда (со старым api)
 """
 def crtask_baseset(message):
@@ -115,7 +154,7 @@ def crtask_priceset(message):
     try:
         NewCryptoTask.price = float(message.text)
         NewCryptoTask.price = NewCryptoTask.price if NewCryptoTask.price>0.001 else "{:^10.8f}".format(NewCryptoTask.price)
-        echo = bot.send_message(chat_id=message.chat.id, text=f"Task creation\nPair: {NewCryptoTask.base}\{NewCryptoTask.quote}\nPrice: {NewCryptoTask.price}.\nShould the price rise or fall to this price?", reply_markup = keyboards.get_raise_fall_kb())
+        echo = bot.send_message(chat_id=message.chat.id, text=f"Pair: {NewCryptoTask.base}\{NewCryptoTask.quote}\nPrice: {NewCryptoTask.price}.\nShould the price rise or fall to this price?", reply_markup = keyboards.get_raise_fall_kb())
     except (ValueError):
         echo = bot.send_message(chat_id=message.chat.id, text=f"You have sent wrong value! Task creation aborted! Send /createtask again.", reply_markup = keyboards.get_startup_keys())
 
