@@ -1,6 +1,6 @@
 import os
 import threading
-from typing import Counter
+from typing import Counter, Text
 from requests.api import get
 import telebot
 import json
@@ -17,6 +17,7 @@ import subprocess
 import ExCuWorker
 import CryptoTask as CT
 import keyboards
+import recombs as res
 
 TasksList = []
 tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' else config.TOKEN_px
@@ -44,6 +45,10 @@ def checkifnewuser(message):
     mainthread.start()
     user = CT.UserSets(user_id=message.chat.id, notifytimer = 30)
     USERlist.append(user)
+
+#@bot.message_handler(func= lambda message: res.createTaskComplete.match(message.text) !=None or res.createTaskWithPair.match(message.text) != None or res.createTaskWithPrice.match(message.text) != None)
+#def createtask 
+
 
 #//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 #0-й этап
@@ -355,34 +360,6 @@ def callback_query(call):
     except (IndexError):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")  
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-    
-@bot.message_handler(commands=['redallert'])
-def redalert(message):
-    bot.send_message(chat_id=message.chat.id, text=f'BITCOIN RED ALLERT WAS ENABLED FOR 30000$')
-    mainthread = threading.Thread(target=redloop,args=[message])
-    mainthread.start()
-    
-    
-def redloop(message):
-    while(True):
-        currentc = ExCuWorker.bin_getCur("BTC","USDT")
-        try:
-            if (currentc >= 30090):
-            
-                #os.system("termux-media-player play Untitled.mp3")
-                #gprint('termux-media-player play Untitled.mp3')
-                for i in range(10):
-                    output = subprocess.run(args=['termux-torch on'], capture_output=True).stdout
-                    print('termux-torch on')
-                    time.sleep(500)
-                    output = subprocess.run(args=['termux-torch off'], capture_output=True).stdout
-                    print('termux-torch off')
-                    time.sleep(800)
-                    bot.send_message(chat_id=message.chat.id, text='RED ALLERT BTC CRASHED!')
-        except Exception as e:
-            print(e)
-        
-    pass
     
 @bot.message_handler(commands=['getrates'])
 def getrates(message):
