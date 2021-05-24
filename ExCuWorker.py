@@ -26,7 +26,21 @@ def bin_getCur(base: str, quote: str) -> float:
     except:
         return None
     
+def bin_get_monitor():
+    url = "https://www.binance.com/api/v3/ticker/price"
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36"}
+    datacur = requests.get(url,headers=headers).text
+    decode_cur = json.loads(datacur)
+    return decode_cur
 
+def bin_monitor(base, quote, basecurses):
+    for item in basecurses:
+        if (item['symbol']==base+quote):
+            price = float(item['price'])
+            price = price if price>0.0001 else "{:^10.8f}".format(price)
+            return price
+
+"""
 def getCurExRates():
     global TimeLastUpdate
     global CurExRates
@@ -54,8 +68,11 @@ def monitor(basecoin: str, quotecoin: str) -> float:
                 price = float(item['price'])
                 price = price if price>0.0001 else "{:^10.8f}".format(price)
                 return price
+"""
 
 
+
+"""
 def isCurrencyValid(currency: str, baseOrQuote: bool) -> bool:
     for i in range(4):
         data = getCurExRates()
@@ -73,7 +90,7 @@ def getAllQuotes(currency: str):
             if item['base']==currency and item['quote'] != None and item['quote'] not in quotes:
                 quotes.append(item['quote'])
     return quotes
-                
+"""        
 
 
 

@@ -36,6 +36,10 @@ def get_startup_keys():
     markup.add(item1, item2)
     return markup
 
+def get_create_only():
+    markup = InlineKeyboardMarkup([InlineKeyboardButton("Create task 📊",callback_data="createtask")]) 
+    return markup
+
 def get_starttask_keys(idtask: int):
     markup = InlineKeyboardMarkup()
     markup.row_width=2
@@ -57,13 +61,21 @@ def get_en_dis_all_keys():
 def get_main_keyboard():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     
-    item1 = KeyboardButton("View my tasks 📝")
-    item2 = KeyboardButton("Create new task 📊")
-    item5 = KeyboardButton("Check price 💸")
-    item3 = KeyboardButton("Start all tasks ▶️")
-    item4 = KeyboardButton("Disable all tasks ⏸")
-    item6 = KeyboardButton("All exchange rates ✅")
+    item1 = KeyboardButton("Display tasks list 📝")
+    item2 = KeyboardButton("Create new 📊")
+    item5 = KeyboardButton("Settings ⚙️")
+    item3 = KeyboardButton("Start all ▶️")
+    item4 = KeyboardButton("Disable all ⏸")
+    item6 = KeyboardButton("Display rates ✅")
     markup.add(item1, item2,item5, item3, item4, item6)
+    return markup
+
+def get_settings_kb():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    
+    item1 = KeyboardButton("🕘Notification timeout")
+    item2 = KeyboardButton("✅Auto enable new task")
+    markup.add(item1,item2)
     return markup
 
 def get_quotes_keyboard(listitems: list):

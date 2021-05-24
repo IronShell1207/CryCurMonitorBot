@@ -47,6 +47,13 @@ def checkifnewuser(message):
     user = CT.UserSets(user_id=message.chat.id, notifytimer = 30)
     USERlist.append(user)
 
+
+def getUSByID(id) -> CT.UserSets:
+    for user in USERlist:
+        if user.user_id == id:
+            return user
+    bot.send_message(chat_id=id, text="It's looks like you haven't any tasks enabled!")
+    return None
 #@bot.message_handler(func= lambda message: res.createTaskComplete.match(message.text) !=None or res.createTaskWithPair.match(message.text) != None or res.createTaskWithPrice.match(message.text) != None)
 #def createtask 
 
@@ -59,11 +66,15 @@ def create_task_handler(message):
     try:
         NewCryptoTask = CT.CryptoTask(user_id=message.chat.id)
         cmb = recombos.create_re_full.match(message.text)
+        
         if cmb != None:
             NewCryptoTask.base = cmb.group(2).upper()
             NewCryptoTask.quote = cmb.group(4).upper()
             NewCryptoTask.price =  float(cmb.group(5)) if float(cmb.group(5))>0.001 else "{:^10.8f}".format(float(cmb.group(5)))
             NewCryptoTask.rofl = True if cmb.group(6) == "+" else False
+            user = getUSByID(message.chat.id)
+            if (user!=None):
+                NewCryptoTask.enable = True if user.autostartcreate == True else False
             bot.send_message(chat_id=message.chat.id, 
             text=f"""Your task succesuffuly created. \nDetails of your task:\n{NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /turnontasks""", 
             reply_markup=keyboards.get_starttask_keys(NewCryptoTask.id))
@@ -140,8 +151,8 @@ def crtask_quotetask(message):
     global NewCryptoTask
     NewCryptoTask.quote = message.text.upper()
     priceex = ExCuWorker.bin_getCur(base= NewCryptoTask.base, quote= NewCryptoTask.quote)
-    priceex = priceex if priceex>0.001 else "{:^10.8f}".format(priceex)
     if (priceex != None):
+        priceex = priceex if priceex>0.001 else "{:^10.8f}".format(priceex)
         echo = bot.send_message(chat_id= message.chat.id, text=f"Task creation.\nYour pair is {NewCryptoTask.base}\{NewCryptoTask.quote}.\nNow send the price, which you want to get. If exchange rates of this pair gets to this price you will get the notifications.\nExample: {priceex}")
         bot.register_next_step_handler(message=echo, callback=crtask_priceset)
     else:
@@ -171,6 +182,9 @@ def crtask_rofl(message, data):
         if item.base == NewCryptoTask.base and item.quote == NewCryptoTask.quote and item.rofl == NewCryptoTask.rofl and item.user_id == NewCryptoTask.user_id :
             bot.send_message(chat_id=message.chat.id, text=f"You already have same task: {NewCryptoTask.base}/{NewCryptoTask.quote}.\n{item.ToString()}\n\You must edit or delete it!", reply_markup=keyboards.get_remove_edit_kb(item.id))
             return
+    user = getUSByID(message.chat.id)
+    if (user!=None):
+        NewCryptoTask.enable = True if user.autostartcreate == True else False
     bot.send_message(chat_id=message.chat.id, 
     text=f"""Your task succesuffuly created. \nDetails of your task:
     {NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /turnontasks""", 
@@ -227,11 +241,7 @@ def task_manage_handler(message):
         taskz = match3.group(1)
         idz = int(match3.group(2))
         if (taskz == "settimer" or taskz == "timer"):
-            for useri in USERlist:
-                if message.chat.id == useri.user_id:
-                    useri.setnewtimer(idz)
-                    bot.send_message(chat_id=message.chat.id, text=f"📣Notification delay setted on {idz}sec.🕒")
-                    return
+            set_notify_timer(message)
         idz = id_task_finder(int(match3.group(2)), message.chat.id)
         if idz == -1:
             bot.send_message(chat_id=message.chat.id, text="🚫You have sent wrong task id!", reply_markup=keyboards.get_startup_keys())
@@ -266,7 +276,7 @@ def pricecheck(message):
     bot.register_next_step_handler(message=echo, callback=pricechecker)
 
 def pricechecker(message):
-    pairpattern = re.compile(r'(\S+)/(\S+)').match(message.text)
+    pairpattern = re.compile(r'(\w{2,5})/(\w{2,5})').match(message.text)
     if pairpattern != None:
         basecur = pairpattern.group(1).upper()
         quotecur = pairpattern.group(2).upper()
@@ -285,10 +295,6 @@ def pricechecker(message):
 def startALLtasks(message):
     if len(TasksList) > 0:
         checkifnewuser(message)
-        #if message.chat.id not in USERlist:
-        #    mainthread = threading.Thread(target=tasks_loop,args=[message])
-        #    mainthread.start()
-        #    USERlist.append(message.chat.id)
         i = 0
         ix = 0
         for item in TasksList:
@@ -298,7 +304,6 @@ def startALLtasks(message):
                     i+=1
                 else: 
                     ix += 1
-                    #bot.send_message(chat_id=message.chat.id, text=f"Your pair {item.base}/{item.quote} is already going!")
         alreadyon = f"and {ix} tasks already ON ✅" if ix>0 else ""
         bot.send_message(chat_id=message.chat.id, text=f"Your {i} monitoring tasks are started {alreadyon}\nFor check all your tasks send /showtasks")
     else: 
@@ -312,6 +317,7 @@ def stoptasks(message):
             item.enable=False
     bot.send_message(chat_id=message.chat.id, text="⛔️ All tasks are stopped.")
 
+#Need to be revorked
 def removealltasks(message):
     i = 0
     count = len(TasksList)
@@ -329,6 +335,7 @@ def callback_query(call):
     try:
         global NewCryptoTask
         global TasksList
+        checkifnewuser(call.message)
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
         taskre = re.compile('t/(\w+)/(\d+)')
         taskUDre = re.compile('t/(\w+)(\d+)/(\d+)')
@@ -338,14 +345,13 @@ def callback_query(call):
         if commandQuoteMatch != None:
             NewCryptoTask.quote = commandQuoteMatch.group(1)
             expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote= NewCryptoTask.quote) 
-            #expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
             echo = bot.send_message(chat_id=call.message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{expr}')")
             bot.register_next_step_handler(message=echo,callback=crtask_priceset)
             return
         if call.data == "CreateRaise" or call.data == "CreateFall":
             crtask_rofl(call.message, call.data)
         elif call.data == "createtask":
-            createnewtask(call.message)
+            create_task_handler(call.message)
         elif call.data == "turnontasks":
             startALLtasks(call.message)
         elif call.data == "stopalltasks":
@@ -400,25 +406,34 @@ def callback_query(call):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")  
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     
+def set_notify_timer(message):
+    try:
+        timesecs = float(message.text)
+         
+        user = getUSByID(message.chat.id)
+        if (user!=None):
+            user.notifytimer= timesecs
+            bot.send_message(chat_id=message.chat.id, text=f"📣Notification delay setted on {timesecs}sec.🕒")
+    except (ValueError):
+        bot.send_message(chat_id=message.chat.id, text="Wrong value!")    
+    
 @bot.message_handler(commands=['getrates'])
 def getrates(message):
     printer = ""
+    getcources = ExCuWorker.bin_get_monitor()
     for item in TasksList:
         if item.user_id == message.chat.id: 
-            cur = ExCuWorker.bin_getCur(base=item.base, quote= item.quote)
-            #cur = ExCuWorker.monitor(item.base, item.quote)
+            cur = ExCuWorker.bin_monitor(base=item.base, quote= item.quote, basecurses= getcources)
             printer += f"▫️ [ID #{item.id}] {item.base}/{item.quote} - {cur}\n"
     if printer!="":
         bot.send_message(chat_id=message.chat.id, text=f"📈 Your currency exchange rates, based on your tasks: 📉\n\n{printer}")
+    else:
+        bot.send_message(chat_id=message.chat.id, text="You didn't have any tasks", reply_markup=keyboards.get_create_only())
             
     
 @bot.message_handler(commands=['showtasks', 'viewtasks', 'checktasks'])
 def showtasks(message):
     checkifnewuser(message)
-    #if message.chat.id not in USERlist:
-    #    mainthread = threading.Thread(target=tasks_loop,args=[message])
-    #    mainthread.start()
-    #    USERlist.append(message.chat.id)
     printer = ""
     for item in TasksList:
         if item.user_id == message.chat.id:
@@ -435,39 +450,54 @@ def start(message):
 @bot.message_handler(commands=['info'])
 def infohelp(message):
     bot.send_message(chat_id=message.chat.id, 
-                     text=f"This bot is written on Python with pyTelegramBotApi library. This bot uses data from free API: coinlore.com. Data updates every 3-5 minutes, and if you get twice same notifications it's only because of old data on API server\n⛏ Developer: Ironshell\n🛸 Github: https://github.com/IronShell1207/CryCurMonitorBot\n\nIf bot is usefull for you, you can buy my a ☕️ and thx 2u).\n🥇ETH: 0xa35fbab442da4e65413045a4b9b147e2a0fc3e0c\n🎈LTC: LQiBdMeCNWAcSBEhc2QT3ffFz8a2t7zPcG")
+                     text=f"This bot is written on Python with pyTelegramBotApi library. This bot uses realtime binance exchange rates, and exchange rates updates every second!\n⛏ Developer: Ironshell\n🛸 Github: https://github.com/IronShell1207/CryCurMonitorBot\n\nIf bot is usefull for you, you can buy my a ☕️ and thx 2u).\n🥇ETH: 0xa35fbab442da4e65413045a4b9b147e2a0fc3e0c\n🎈LTC: LQiBdMeCNWAcSBEhc2QT3ffFz8a2t7zPcG")
 
 @bot.message_handler(commands=['setstyle'])
 def setstyle(message):
-    for user in USERlist:
-        if message.chat.id == user.user_id:
-            user.notifystyle = not user.notifystyle
-            prints = "📢 Notifications about exchange rates changes now shows separately" if user.notifystyle == False else "📢 Notifications about exchange rates changes now shows jointly in single message"
-            bot.send_message(chat_id=message.chat.id, text = prints)
-            return
+    user = getUSByID(message.chat.id)
+    if (user!=None):
+        user.notifystyle = not user.notifystyle
+        prints = "📢 Notifications about exchange rates changes now shows separately" if user.notifystyle == False else "📢 Notifications about exchange rates changes now shows jointly in single message"
+        bot.send_message(chat_id=message.chat.id, text = prints)
 
-@bot.message_handler(func=lambda message: message.text in ["View my tasks 📝","Create new task 📊","Start all tasks ▶️","Disable all tasks ⏸", "Check price 💸","All exchange rates ✅"])
+@bot.message_handler(func=lambda message: message.text in ["Display tasks list 📝","Create new 📊","Start all ▶️","Disable all ⏸", "Settings ⚙️","Display rates ✅"])
 def msg_kb_handler(message):
-    if message.text == "View my tasks 📝":
+    if message.text == "Display tasks list 📝":
         showtasks(message)
-    elif message.text == "Create new task 📊":
-        createnewtask(message)
-    elif message.text == "Start all tasks ▶️":
+    elif message.text == "Create new 📊":
+        create_task_handler(message)
+    elif message.text == "Start all ▶️":
         startALLtasks(message)
-    elif message.text == "Disable all tasks ⏸":
+    elif message.text == "Disable all ⏸":
         stoptasks(message)
-    elif message.text == "Check price 💸":
-        pricecheck(message)
-    elif message.text == "All exchange rates ✅":
+    elif message.text == "Settings ⚙️":
+        user = getUSByID(message.chat.id)
+        if (user!=None):
+            bot.send_message(chat_id=message.chat.id, text=f"Current settings:\nNotifications delay: {user.notifytimer}\nAuto enable new tasks: {user.autostartcreate}", reply_markup=keyboards.get_settings_kb())
+            return
+    elif message.text == "Display rates ✅":
         getrates(message)
 
-
+@bot.message_handler(func=lambda message: message.text in ["🕘Notification timeout","✅Auto enable new task"])
+def settings_kb_hand(message):
+    
+    if message.text == "✅Auto enable new task":
+        user = getUSByID(message.chat.id)
+        if (user!=None):
+            user.autostartcreate = not user.autostartcreate
+            bot.send_message(chat_id=message.chat.id, text=f"Auto enabling new tasks active status: {user.autostartcreate}", reply_markup=keyboards.get_main_keyboard())
+    elif message.text == "🕘Notification timeout":
+        echo = bot.send_message(chat_id=message.chat.id, text="Send me number of seconds for notification delay (this only works for changing the delay between notifications)", reply_markup=keyboards.get_main_keyboard())
+        bot.register_next_step_handler(echo, set_notify_timer)
+        
+    
+        
 @bot.message_handler(commands=['help'])
 def help(message):
     echo = bot.send_message(chat_id=message.chat.id,
                             text="""Commands list:
 1. Create new monitoring task - /createtask
-or /createtask <base> <quote> <price> <Raise|Fall>
+or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for falling price)
 2. Start all monitoring tasks - /turnontasks
 3. Stop all monitoring tasks - /stopalltasks
 4. Show all tasks /showtasks
@@ -475,41 +505,46 @@ or /createtask <base> <quote> <price> <Raise|Fall>
 6. Start monitoring by ID - /enable <id>
 7. Edit task - /edit <id>
 8. Delete task /remove <id>
-9. Set notification delay (secounds) - /settimer <secs>
+9. Set notification delay (seconds) - /settimer <secs>
 10. Change notification style from separate messages to single - /setstyle
 11. Get all current exchange rates - /getrates""")
     
 
 
 def new_task_loop(message):
-    while(True):
-        timer_usr = 30
-        lastnofity = False
-        for users in USERlist:
-            if users.user_id == message.chat.id:
-                timer_usr = users.notifytimer
-        printer = ""
-        for task in TasksList:
-            if message.chat.id == task.user_id and task.enable== True:
-                getprice = ExCuWorker.bin_getCur(base=task.base, quote=task.quote)
-                if getprice == None:
-                    task.enable = False
-                    bot.send_message(chat_id=message.chat.id, text= f"Something went wrong with price checking of pair {task.base}/{task.quote}")
-                    continue
-                taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
-                getprice = getprice if getprice>0.0001 else "{:^10.8f}".format(getprice)
-                if task.rofl== True and getprice> taskprice:
-                    printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"
-                elif task.rofl == False and getprice<taskprice:
-                    printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n"
-                else:
-                    pass
-        if printer == "":
-            time.sleep(1)
-        elif printer!= "":
-            bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}")
-            time.sleep(timer_usr)
-
+    try:
+        while(True):
+            timer_usr = 30
+            lastnofity = False
+            user = getUSByID(message.chat.id)
+            if (user!=None):
+                timer_usr = user.notifytimer
+            printer = ""
+            getcources = ExCuWorker.bin_get_monitor()
+            for task in TasksList:
+                if message.chat.id == task.user_id and task.enable == True:
+                    getprice = ExCuWorker.bin_monitor(task.base, task.quote, getcources)
+                    if getprice == None:
+                        task.enable = False
+                        bot.send_message(chat_id=message.chat.id, text= f"Something went wrong with price checking of pair {task.base}/{task.quote}")
+                        continue
+                    taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
+                    if task.rofl== True and getprice> taskprice:
+                        printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"
+                    elif task.rofl == False and getprice<taskprice:
+                        printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n"
+                    else:
+                        pass
+            if printer == "":
+                time.sleep(1)
+            elif printer!= "":
+                bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}")
+                time.sleep(timer_usr)
+    except (ConnectionError):
+        bot.send_message(chat_id=message.chat.id,text="There is some problems with api connection")
+    except:
+        bot.send_message(chat_id=message.chat.id, text="Some error occured!")
+"""
 def tasks_loop(message):
     while(True):
         style = False
@@ -547,7 +582,7 @@ def tasks_loop(message):
             bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}")
         time.sleep(timecount)       
         #print("Alive")
-                    
+  """                  
 
 def main_loop():
     try:
