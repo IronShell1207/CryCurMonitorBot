@@ -26,17 +26,15 @@ bot = telebot.TeleBot(token=tof)
 
 commandsRE = re.compile("/(\S+)\s(\d+)")
 createRE = re.compile("/(\S+)\s(\S{1,5})\s(\S{1,4})\s(\d+)\s(Fall|Raise)") #/createtask BTC USDT 56000 Raise
-commandQuote = re.compile("n/(\S+)")
+
 
 mainthread = threading.Thread()
-#sleeptimer = 30
 USERlist=[]
 
 
 tasksjsn = CT.get_json_task_list()
 if tasksjsn != None:
     TasksList=tasksjsn
-# Добавить обработку при завершении создания таска, удаление из списка и редактирования путем полного перезаписывания файла 
 
 def checkifnewuser(message):
     for user in USERlist:
@@ -54,23 +52,18 @@ def getUSByID(id) -> CT.UserSets:
             return user
     bot.send_message(chat_id=id, text="It's looks like you haven't any tasks enabled!")
     return None
-#@bot.message_handler(func= lambda message: res.createTaskComplete.match(message.text) !=None or res.createTaskWithPair.match(message.text) != None or res.createTaskWithPrice.match(message.text) != None)
-#def createtask 
 
 
-#//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-#0-й этап
 @bot.message_handler(func= lambda message: 'createtask' in message.text or 'create' in message.text or 'newtask' in message.text)
 def create_task_handler(message):
     global NewCryptoTask
     try:
         NewCryptoTask = CT.CryptoTask(user_id=message.chat.id)
         cmb = recombos.create_re_full.match(message.text)
-        
         if cmb != None:
             NewCryptoTask.base = cmb.group(2).upper()
             NewCryptoTask.quote = cmb.group(4).upper()
-            NewCryptoTask.price =  float(cmb.group(5)) if float(cmb.group(5))>0.001 else "{:^10.8f}".format(float(cmb.group(5)))
+            NewCryptoTask.price = float(cmb.group(5)) if float(cmb.group(5))>0.001 else "{:^10.8f}".format(float(cmb.group(5)))
             NewCryptoTask.rofl = True if cmb.group(6) == "+" else False
             user = getUSByID(message.chat.id)
             if (user!=None):
@@ -98,65 +91,36 @@ def create_task_handler(message):
         echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'\nOr you can send full command for creation. For example:\n/createtask BTC USDT 56000 Raise")
         bot.register_next_step_handler(message=echo, callback=crtask_baseset)
     except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text="Error. You have sent wrong value.")
+        bot.send_message(chat_id=message.chat.id, text="🚫 Error. You have sent wrong value.")
 
-    
-"""
-@bot.message_handler(commands=['createtask','create','newtask'])
-def createnewtask(message):
-    global mainthread
-    global USERlist
-    global NewCryptoTask
-    crm = createRE.match(message.text)
-    if crm != None:
-        fast_task_create(message,crm)
-    else:
-        echo = bot.send_message(chat_id=message.chat.id ,text="For create new crypto currency monitoring task send crypto currency name, for example: 'BTC' or 'RVN'\nOr you can send full command for creation. For example:\n/createtask BTC USDT 56000 Raise")
-        bot.register_next_step_handler(message=echo, callback=crtask_baseset)
-    checkifnewuser(message)
-"""
-# 1-й этап Переадресация с main сюда (со старым api)
-"""
+
 def crtask_baseset(message):
     global NewCryptoTask
-    NewCryptoTask = CT.CryptoTask(user_id=message.chat.id)
-    NewCryptoTask.base = message.text.upper()
-    if ExCuWorker.isCurrencyValid(NewCryptoTask.base, True):
-        #echo = bot.send_message(chat_id=message.chat.id, text=f"Your base currency: {NewCryptoTask.base}. Now please send the quote currency (for example: 'USDT')")
-        #bot.register_next_step_handler(message=echo, callback=crtask_quoteset)
-        quotes = ExCuWorker.getAllQuotes(NewCryptoTask.base)
-        bot.send_message(chat_id=message.chat.id, text=f"Your base currency: {NewCryptoTask.base}. \nSelect the quote currency", reply_markup=keyboards.get_quotes_keyboard(quotes))
+    revalue = recombos.re_value_name.match(message.text)
+    if revalue != None:
+        NewCryptoTask.base = message.text.upper()
+        quotes_stack = ExCuWorker.bin_get_pair_quotes(NewCryptoTask.base)
+        echo = bot.send_message(chat_id=message.chat.id, text=f"Task creation\n\nYour base currency: {NewCryptoTask.base}. \nNow select quote for create pair.", reply_markup=keyboards.get_quotes_keyboard(quotes_stack))
+        #bot.register_next_step_handler(message=echo, callback=crtask_quotetask)
     else:
-        bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name or exchange rates of that currency now unavailable!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
-def crtask_quoteset(message):
-    global NewCryptoTask
-    NewCryptoTask.quote = message.text.upper()
-    if ExCuWorker.isCurrencyValid(NewCryptoTask.quote, False):
-        expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
-        echo = bot.send_message(chat_id=message.chat.id, text=f"You have setted the pair: {NewCryptoTask.base}/{NewCryptoTask.quote}. Now send me the price witch you want to get (for example: '{expr}')")
-        bot.register_next_step_handler(message=echo,callback=crtask_priceset)
-    else:
-        bot.send_message(chat_id=message.chat.id, text="You have sent wrong currency name or exchange rates of that pair now unavailable!\nTask creation aborted. Send /createtask again", reply_markup = keyboards.get_startup_keys())
-"""
-def crtask_baseset(message):
-    global NewCryptoTask
-    NewCryptoTask = CT.CryptoTask(user_id= message.chat.id)
-    NewCryptoTask.base = message.text.upper()
-    echo = bot.send_message(chat_id=message.chat.id, text=f"Task creation.\nYour base currency: {NewCryptoTask.base}.\nNow send the quote currency.\nFor example: USDT, BTC")
-    bot.register_next_step_handler(message=echo, callback=crtask_quotetask)
+        bot.send_message(chat_id=message.chat.id, text="🚫 Error. You have sent wrong value")
 
 
 #2-й этап    
 def crtask_quotetask(message):
     global NewCryptoTask
-    NewCryptoTask.quote = message.text.upper()
-    priceex = ExCuWorker.bin_getCur(base= NewCryptoTask.base, quote= NewCryptoTask.quote)
-    if (priceex != None):
-        priceex = priceex if priceex>0.001 else "{:^10.8f}".format(priceex)
-        echo = bot.send_message(chat_id= message.chat.id, text=f"Task creation.\nYour pair is {NewCryptoTask.base}\{NewCryptoTask.quote}.\nNow send the price, which you want to get. If exchange rates of this pair gets to this price you will get the notifications.\nExample: {priceex}")
-        bot.register_next_step_handler(message=echo, callback=crtask_priceset)
+    revalue = recombos.re_value_name.match(message.text)
+    if revalue != None:
+        NewCryptoTask.quote = message.text.upper()
+        priceex = ExCuWorker.bin_getCur(base= NewCryptoTask.base, quote= NewCryptoTask.quote)
+        if (priceex != None):
+            priceex = priceex if priceex>0.001 else "{:^10.8f}".format(priceex)
+            echo = bot.send_message(chat_id= message.chat.id, text=f"Task creation.\nYour pair is {NewCryptoTask.base}\{NewCryptoTask.quote}.\nNow send the price, which you want to get. If exchange rates of this pair gets to this price you will get the notifications.\nExample: {priceex}")
+            bot.register_next_step_handler(message=echo, callback=crtask_priceset)
+        else:
+            bot.send_message(chat_id=message.chat.id, text=f"🚫 Your pair is wrong. Task creation aborted")
     else:
-        bot.send_message(chat_id=message.chat.id, text=f"Your pair is wrong. Task creation aborted")
+        bot.send_message(chat_id=message.chat.id, text="🚫 Error. You have sent wrong value")
 
 
 #3Й-этап
@@ -207,30 +171,6 @@ def id_task_finder(in_id: int, user_id: int):
         i+=1
     return -1
 
-def fast_task_create(message, crm):
-    global NewCryptoTask
-    try:
-        basecur = crm.group(2).upper()
-        quotecur = crm.group(3).upper()
-        pricecur = float(crm.group(4))
-        roflcur = True if crm.group(5)=="Raise" else False
-        if ExCuWorker.isCurrencyValid(basecur,True) and ExCuWorker.isCurrencyValid(quotecur, False):
-            NewCryptoTask = CT.CryptoTask(user_id=message.chat.id, base=basecur, quote=quotecur, price=pricecur, rofl=roflcur)
-            for item in TasksList:
-                if NewCryptoTask.id == item.id:
-                    NewCryptoTask.id += 1
-            if item.base == NewCryptoTask.base and item.quote == NewCryptoTask.quote and item.rofl == NewCryptoTask.rofl and item.user_id == NewCryptoTask.user_id:
-                bot.send_message(chat_id=message.chat.id, text=f"You already have same task: {NewCryptoTask.base}/{NewCryptoTask.quote}.\n{item.ToString()}\n\You must edit or delete it!", reply_markup=keyboards.get_remove_edit_kb(item.id))
-                return
-            bot.send_message(chat_id=message.chat.id, 
-                text=f"""Your task succesuffuly created. \nDetails of your task:
-{NewCryptoTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /turnontasks""", 
-                reply_markup=keyboards.get_starttask_keys(NewCryptoTask.id))
-        TasksList.append(NewCryptoTask)
-        CT.write_json_tasks(TasksList) 
-    except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text="Wrong price!")
-        #NewCryptoTask = CT.CryptoTask
 
 @bot.message_handler(func= lambda message: commandsRE.match(message.text) != None)
 def task_manage_handler(message):
@@ -256,19 +196,20 @@ def task_manage_handler(message):
             TasksList[idz].enable = False
             NewCryptoTask = TasksList[idz]
             expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote=NewCryptoTask.quote)
-            #expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
             echo = bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}.\nFor edit price send the new one.\nFor example: {expr}")
             TasksList.remove(NewCryptoTask)
             bot.register_next_step_handler(message=echo,callback=crtask_priceset)
         elif (taskz == "remove" or taskz == "delete"):
             item = TasksList[idz]
             item.enable = False
-            bot.send_message(chat_id=message.chat.id, text=f"⭕️ Pair ID {item.id} {item.base}/{item.quote} removed!")
+            bot.send_message(chat_id=message.chat.id, text=f"❌ Pair ID {item.id} {item.base}/{item.quote} removed!")
             TasksList.remove(item)
             CT.write_json_tasks(TasksList)
         
     except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text="❌Missing task ID", reply_markup=keyboards.get_startup_keys())
+        bot.send_message(chat_id=message.chat.id, text="🚫 Missing task ID", reply_markup=keyboards.get_startup_keys())
+
+
 
 @bot.message_handler(commands=["checkprice"])
 def pricecheck(message):
@@ -337,11 +278,10 @@ def callback_query(call):
         global TasksList
         checkifnewuser(call.message)
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
-        taskre = re.compile('t/(\w+)/(\d+)')
-        taskUDre = re.compile('t/(\w+)(\d+)/(\d+)')
-        marhreEdUD = taskUDre.match(call.data)
-        mathretask = taskre.match(call.data)
-        commandQuoteMatch = commandQuote.match(call.data)
+        matchreEdUD = recombos.re_fast_value_change.match(call.data)
+        mathretask = recombos.task_manupulation_re.match(call.data)
+        # быстрый выбор quote при создании таска (пока не используется)
+        commandQuoteMatch = recombos.create_quote_kb.match(call.data)
         if commandQuoteMatch != None:
             NewCryptoTask.quote = commandQuoteMatch.group(1)
             expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote= NewCryptoTask.quote) 
@@ -360,16 +300,16 @@ def callback_query(call):
             removealltasks(call.message)
         elif call.data == "viewtasks":
             showtasks(call.message)
-        elif marhreEdUD != None:
-            procent = int(marhreEdUD.group(2))/100
-            received_id = int(marhreEdUD.group(3))
+        elif matchreEdUD != None:
+            procent = int(matchreEdUD.group(2))/100
+            received_id = int(matchreEdUD.group(3))
             #Сразу узнаем received_id для всех операций ниже
             RealID = id_task_finder(received_id, call.message.chat.id)
-            if marhreEdUD.group(1) == "up":
+            if matchreEdUD.group(1) == "up":
                 TasksList[RealID].price = TasksList[RealID].price *(1+procent)
                 bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved to {TasksList[RealID].price} for {TasksList[RealID].ToShortId()}")
                 return
-            elif marhreEdUD.group(1) == "dn":
+            elif matchreEdUD.group(1) == "dn":
                 TasksList[RealID].price = TasksList[RealID].price *(1-procent)
                 bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved to {TasksList[RealID].price} for {TasksList[RealID].ToShortId()}")
                 return

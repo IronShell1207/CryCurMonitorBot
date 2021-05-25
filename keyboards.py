@@ -1,3 +1,4 @@
+from sre_constants import MARK
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import telebot
 
@@ -18,6 +19,7 @@ def get_disable_task_kb(idtask: int, rofl: bool):
     item3 =InlineKeyboardButton(itemROD.format("5"), callback_data = itemROData.format(5))
     item4 =InlineKeyboardButton(itemROD.format("2"), callback_data = itemROData.format(2))
     item5 =InlineKeyboardButton(itemROD.format("1"), callback_data = itemROData.format(1))
+    item6 = InlineKeyboardButton("New value", callback_data="t/newv")
     #item3 =InlineKeyboardButton("Remove task ❌", callback_data=f"t/removetask/{idtask}")
     markup.add(item5, item4 ,item3,item1, item2,)
     return markup
@@ -79,7 +81,7 @@ def get_settings_kb():
     return markup
 
 def get_quotes_keyboard(listitems: list):
-    markup = InlineKeyboardMarkup()
+    markup = InlineKeyboardMarkup()  
     for item in listitems:
         ikey = InlineKeyboardButton(item,callback_data=f"n/{item}")
         markup.add(ikey)
