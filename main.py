@@ -195,10 +195,9 @@ def task_manage_handler(message):
         elif (taskz == "edittask" or taskz == "edit"):
             TasksList[idz].enable = False
             NewCryptoTask = TasksList[idz]
-            expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote=NewCryptoTask.quote)
-            echo = bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}.\nFor edit price send the new one.\nFor example: {expr}")
-            TasksList.remove(NewCryptoTask)
-            bot.register_next_step_handler(message=echo,callback=crtask_priceset)
+            echo = bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}.\nFor edit price send the new one.\nSelect price changing factor or you can set your value.", reply_markup=keyboards.get_edit_price_keyboard(idz,TasksList[idz].rofl))
+            #TasksList.remove(NewCryptoTask)
+            #bot.register_next_step_handler(message=echo,callback=crtask_priceset)
         elif (taskz == "remove" or taskz == "delete"):
             item = TasksList[idz]
             item.enable = False
@@ -280,6 +279,7 @@ def callback_query(call):
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
         matchreEdUD = recombos.re_fast_value_change.match(call.data)
         mathretask = recombos.task_manupulation_re.match(call.data)
+        edittask_re = recombos.edit_task_re.match(call.data)
         # быстрый выбор quote при создании таска (пока не используется)
         commandQuoteMatch = recombos.create_quote_kb.match(call.data)
         if commandQuoteMatch != None:
@@ -313,6 +313,15 @@ def callback_query(call):
                 TasksList[RealID].price = TasksList[RealID].price *(1-procent)
                 bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved to {TasksList[RealID].price} for {TasksList[RealID].ToShortId()}")
                 return
+        elif edittask_re != None:
+            received_id = int(edittask_re.group(1))
+            RealID = id_task_finder(received_id, call.message.chat.id)
+            TasksList[RealID].enable = False
+            NewCryptoTask = TasksList[RealID]
+            expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote= NewCryptoTask.quote)
+            echo = bot.send_message(chat_id=call.message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}.\nFor edit price send the new one.\nFor example: {expr}")
+            TasksList.remove(NewCryptoTask)
+            bot.register_next_step_handler(message=echo, callback=crtask_priceset)
         #Функции ниже предназначены для обработки взаимодействий связанных с тасками напрямую  s
         elif mathretask != None:
             received_id = int(mathretask.group(2))
@@ -326,13 +335,13 @@ def callback_query(call):
                 bot.send_message(chat_id=call.message.chat.id, text="❗️Monitoring disabled for selected ID")
                 CT.write_json_tasks(TasksList)
             elif mathretask.group(1) == "edittask":
-                TasksList[RealID].enable = False
-                NewCryptoTask = TasksList[RealID]
-                expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote= NewCryptoTask.quote)
+                #TasksList[RealID].enable = False
+                #NewCryptoTask = TasksList[RealID]
+                #expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote= NewCryptoTask.quote)
                 #expr = ExCuWorker.monitor(basecoin=NewCryptoTask.base,quotecoin=NewCryptoTask.quote)
-                echo = bot.send_message(chat_id=call.message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}.\nFor edit price send the new one.\nFor example: {expr}")
-                TasksList.remove(NewCryptoTask)
-                bot.register_next_step_handler(message=echo, callback=crtask_priceset)
+                echo = bot.send_message(chat_id=call.message.chat.id, text=f"🖍 You are editting pair: {NewCryptoTask.ToShortId()}. Select price changing factor or you can set your value.", reply_markup=keyboards.get_edit_price_keyboard(RealID,TasksList[RealID].rofl))
+                #TasksList.remove(NewCryptoTask)
+                #bot.register_next_step_handler(message=echo, callback=crtask_priceset)
             elif mathretask.group(1) == "removetask":
                 item = TasksList[RealID]
                 item.enable = False
@@ -478,51 +487,13 @@ def new_task_loop(message):
             if printer == "":
                 time.sleep(1)
             elif printer!= "":
-                bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}")
+                bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>")
                 time.sleep(timer_usr)
     except (ConnectionError):
         bot.send_message(chat_id=message.chat.id,text="There is some problems with api connection")
     except:
         bot.send_message(chat_id=message.chat.id, text="Some error occured!")
-"""
-def tasks_loop(message):
-    while(True):
-        style = False
-        timecount = 90
-        for users in USERlist:
-            if users.user_id == message.chat.id:
-                timecount = users.notifytimer
-                style = users.notifystyle  
-        printer = ""
-        for item in TasksList:
-            if message.chat.id == item.user_id and item.enable==True:
-                getprice = ExCuWorker.monitor(basecoin=item.base, quotecoin=item.quote)
-                if getprice == None:
-                    bot.send_message(chat_id= message.chat.id, text=f"Sorry, pair {item.base}/{item.quote} now unavailable! Task disabled!⛔️")
-                    item.enable=False
-                    continue
-                ipr = item.price if item.price>0.0001 else "{:^10.8f}".format(item.price)
-                gpr = getprice if getprice>0.0001 else "{:^10.8f}".format(getprice)
-                if item.rofl==True and getprice>item.price:
-                    print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price raises to {gpr} from {ipr}')
-                    printer += f"🔺 [ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!\n"
-                    if style == False:
-                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already raise 📈 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id, True))
-                        time.sleep(1)
-                elif item.rofl==False and getprice<item.price:
-                    print(f'[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Price fall to {gpr} from {ipr}')
-                    printer += f"🔻 [ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!\n"
-                    if style == False:
-                        bot.send_message(chat_id=message.chat.id, text = f"[ID {item.id}] {item.base}/{item.quote} already fall 📉 to {gpr}!",reply_markup=keyboards.get_disable_task_kb(item.id, False))
-                        time.sleep(1)
-                else: 
-                    pass
-                    print(f"[{datetime.datetime.now().time()}] {item.base}/{item.quote}. Current price: {gpr}; Task id: {item.id}, User id: {item.user_id}") 
-        if printer != "" and style == True:
-            bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}")
-        time.sleep(timecount)       
-        #print("Alive")
-  """                  
+       
 
 def main_loop():
     try:

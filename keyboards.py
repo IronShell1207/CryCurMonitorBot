@@ -9,19 +9,19 @@ def get_raise_fall_kb():
     return markup
 
 
-def get_disable_task_kb(idtask: int, rofl: bool):
+def get_edit_price_keyboard(idtask: int, rofl: bool):
     markup = InlineKeyboardMarkup()
     markup.row_width = 3
     itemROD = "🔺 by +{0}%" if rofl else "🔻 by -{0}%"
     itemROData = "t/up{0}/"+str(idtask) if rofl else "t/dn{0}/"+str(idtask)
     item1 =InlineKeyboardButton("Disable ⛔️", callback_data = f"t/disable/{idtask}")
-    item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"t/edittask/{idtask}")
+    #item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"t/edittask/{idtask}")
     item3 =InlineKeyboardButton(itemROD.format("5"), callback_data = itemROData.format(5))
     item4 =InlineKeyboardButton(itemROD.format("2"), callback_data = itemROData.format(2))
     item5 =InlineKeyboardButton(itemROD.format("1"), callback_data = itemROData.format(1))
-    item6 = InlineKeyboardButton("New value", callback_data="t/newv")
+    item6 = InlineKeyboardButton("New value ✏️", callback_data=f"t/newv{str(idtask)}")
     #item3 =InlineKeyboardButton("Remove task ❌", callback_data=f"t/removetask/{idtask}")
-    markup.add(item5, item4 ,item3,item1, item2,)
+    markup.add(item5, item4 ,item3,item1,item6)
     return markup
 
 def get_remove_edit_kb(idtask: int):

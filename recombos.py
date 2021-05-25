@@ -7,6 +7,8 @@ create_univers = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{
 #                                       1                       2       3       4       5  6      7    8
 edit_re = re.compile("/edittask\s*(\d+|)")
 
+edit_task_re = re.compile("t/newv(\d+)")
+
 re_value_name = re.compile("([A-Z,a-z]{2,5})")
 
 task_manupulation_re = re.compile('t/(\w+)/(\d+)')
