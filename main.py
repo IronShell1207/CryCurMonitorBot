@@ -275,13 +275,14 @@ def callback_query(call):
     try:
         global NewCryptoTask
         global TasksList
-        checkifnewuser(call.message)
+   
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
         matchreEdUD = recombos.re_fast_value_change.match(call.data)
         mathretask = recombos.task_manupulation_re.match(call.data)
         edittask_re = recombos.edit_task_re.match(call.data)
         # быстрый выбор quote при создании таска (пока не используется)
         commandQuoteMatch = recombos.create_quote_kb.match(call.data)
+        checkifnewuser(call.message)
         if commandQuoteMatch != None:
             NewCryptoTask.quote = commandQuoteMatch.group(1)
             expr = ExCuWorker.bin_getCur(base=NewCryptoTask.base, quote= NewCryptoTask.quote) 
@@ -485,14 +486,17 @@ def new_task_loop(message):
                     else:
                         pass
             if printer == "":
-                time.sleep(1)
+                time.sleep(2.5)
             elif printer!= "":
                 bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>")
                 time.sleep(timer_usr)
-    except (ConnectionError):
-        bot.send_message(chat_id=message.chat.id,text="There is some problems with api connection")
-    except:
-        bot.send_message(chat_id=message.chat.id, text="Some error occured!")
+    except ConnectionError as ce:
+        bot.send_message(chat_id=message.chat.id,text=f"There is some problems with api connection\n{str(ce)}")
+        new_task_loop(message)
+    except Exception as e:
+        bot.send_message(chat_id=message.chat.id, text=f"Some error occured!\n{str(e)}")
+        new_task_loop(message)
+        
        
 
 def main_loop():
