@@ -26,9 +26,12 @@ def get_edit_price_keyboard(idtask: int, rofl: bool):
 
 def get_remove_edit_kb(idtask: int):
     markup = InlineKeyboardMarkup()
+    markup.row_width=2
     item1 =InlineKeyboardButton("Disable ⛔️", callback_data = f"t/disable/{idtask}")
     item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"t/edittask/{idtask}")
-    markup.add(item1, item2)
+    item3 = InlineKeyboardButton("Add anyway", callback_data=f"createanyway")
+    item4 = InlineKeyboardButton("Override ", callback_data=f"t/overridetask/{idtask}")
+    markup.add(item1, item2, item3, item4)
     return markup
 
 def get_startup_keys():
