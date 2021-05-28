@@ -46,7 +46,7 @@ def retUser(message):
     mainthread = threading.Thread(target=new_task_loop,args=[message])
     mainthread.start()
     NewCT = CT.CryptoTask(user_id=message.chat.id)
-    user = CT.UserSets(user_id=message.chat.id, notifytimer = 30, CTask=NewCT)
+    user = CT.UserSets(user_id=message.chat.id, notifytimer = 80, CTask=NewCT)
     USERlist.append(user)
     return user
 
@@ -130,12 +130,13 @@ def crtask_rofl(message, data):
     if len(varExist)>0 and varExist != None:
         bot.send_message(chat_id=message.chat.id, text=f"You already have same task: {retUser(message).CTask.base}/{retUser(message).CTask.quote}.\n{varExist[0].ToString()}\n\You must edit or delete it!", reply_markup=keyboards.get_remove_edit_kb(varExist[0].id))
         return
+    TasksList.append(retUser(message).CTask)
+    CT.write_json_tasks(TasksList)
     bot.send_message(chat_id=message.chat.id, 
     text=f"""Your task succesuffuly created. \nDetails of your task:
     {retUser(message).CTask.ToString()}\n\nTo add new send /createtask\nTo start tasks send /turnontasks""", 
                     reply_markup=keyboards.get_starttask_keys(retUser(message).CTask.id))
-    TasksList.append(retUser(message).CTask)
-    CT.write_json_tasks(TasksList)
+    
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -204,6 +205,7 @@ def pricechecker(message):
 @bot.message_handler(commands=['turnontasks', 'startall', 'startalltasks'])
 def startALLtasks(message):
     usertasks = [x for x in TasksList if message.chat.id == x.user_id]
+    retUser(message)
     if len(usertasks) > 0:
         ix = 0
         for task in usertasks:
