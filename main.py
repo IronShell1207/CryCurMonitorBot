@@ -44,7 +44,7 @@ def retUser(message):
         if user.user_id == message.chat.id:
             return user
     mainthread = threading.Thread(target=new_task_loop,args=[message])
-    #mainthread.start()
+    mainthread.start()
     NewCT = CT.CryptoTask(user_id=message.chat.id)
     user = CT.UserSets(user_id=message.chat.id, notifytimer = 30, CTask=NewCT)
     USERlist.append(user)
@@ -322,7 +322,7 @@ def callback_query(call):
 def set_notify_timer(message):
     try:
         timesecs = float(message.text)
-        user = retUser(message.chat.id)
+        user = retUser(message)
         user.notifytimer= timesecs
         bot.send_message(chat_id=message.chat.id, text=f"📣Notification delay setted on {timesecs}sec.🕒")
     except (ValueError):
@@ -366,7 +366,7 @@ def infohelp(message):
 #Временно не работает
 #@bot.message_handler(commands=['setstyle'])
 def setstyle(message):
-    user = retUser(message.chat.id)
+    user = retUser(message)
     user.notifystyle = not user.notifystyle
     prints = "📢 Notifications about exchange rates changes now shows separately" if user.notifystyle == False else "📢 Notifications about exchange rates changes now shows jointly in single message"
     bot.send_message(chat_id=message.chat.id, text = prints)
@@ -382,7 +382,7 @@ def msg_kb_handler(message):
     elif message.text == "Disable all ⏸":
         stoptasks(message)
     elif message.text == "Settings ⚙️":
-        user = retUser(message.chat.id)
+        user = retUser(message)
         bot.send_message(chat_id=message.chat.id, text=f"Current settings:\nNotifications delay: {user.notifytimer}\nAuto enable new tasks: {user.autostartcreate}", reply_markup=keyboards.get_settings_kb())
         return
     elif message.text == "Display rates ✅":
@@ -391,7 +391,7 @@ def msg_kb_handler(message):
 @bot.message_handler(func=lambda message: message.text in ["🕘Notification timeout","✅Auto enable new task"])
 def settings_kb_hand(message):
     if message.text == "✅Auto enable new task":
-        user = retUser(message.chat.id)
+        user = retUser(message)
         user.autostartcreate = not user.autostartcreate
         bot.send_message(chat_id=message.chat.id, text=f"Auto enabling new tasks active status: {user.autostartcreate}", reply_markup=keyboards.get_main_keyboard())
     elif message.text == "🕘Notification timeout":
@@ -422,7 +422,7 @@ or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for f
 def new_task_loop(message):
     try:
         while(True):
-            user = retUser(message.chat.id)
+            user = retUser(message)
             timer_usr = user.notifytimer
             printer = ""
             getcources = ExCuWorker.bin_get_monitor()
