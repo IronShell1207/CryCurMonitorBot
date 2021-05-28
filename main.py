@@ -59,6 +59,7 @@ def retUser(message):
 def create_task_h(message):
     try: 
         cmb = recombos.create_univers.match(message.text)
+        retUser(message).CTask = CT.CryptoTask(user_id=message.chat.id)
         if cmb != None:
             retUser(message).CTask.base = cmb.group(2).upper()
             retUser(message).CTask.quote = cmb.group(4).upper()
@@ -79,8 +80,8 @@ def create_task_h(message):
             echo = bot.send_message(chat_id=message.chat.id, text="To create new monitoring task send me the pair witch you want to monitor.\nFirst send me base currency.\n\nExample: 'BTC' 'LTC' 'ETH' (without quotes)")
             bot.register_next_step_handler(echo, crtask_baseset)
             return
-    except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text="Error")
+    except ValueError as ex :
+        bot.send_message(chat_id=message.chat.id, text=f"Error {ex}")
 
 
 def crtask_baseset(message):
@@ -178,15 +179,15 @@ def task_manage_handler(message):
         bot.send_message(chat_id=message.chat.id, text="🚫 Missing task ID", reply_markup=keyboards.get_startup_keys())
 
 
-
 @bot.message_handler(commands=["checkprice"])
 def pricecheck(message):
     echo = bot.send_message(chat_id=message.chat.id, text="To check current exchange rates send me currency pair.\n\nFor example: BTC/USDT or RVN/BTC.\nPlease observe this pattern")
     bot.register_next_step_handler(message=echo, callback=pricechecker)
-
+    
+#check price via command
 @bot.message_handler(func=lambda message: recombos.ckpr_pair_re.match(message.text)!=None)
 def pricechecker(message):
-    pairpattern = re.compile(r'(\w{2,5})/(\w{2,5})').match(str(message.text).split(' ')[-1])
+    pairpattern = re.compile(r'(\w{2,5})/(\w{2,5})').match(str(message.text).split(' ')[-1]) if "price" in message.text else re.compile(r'(\w{2,5})/(\w{2,5})').match(message.text)
     if pairpattern != None:
         basecur = pairpattern.group(1).upper()
         quotecur = pairpattern.group(2).upper()
