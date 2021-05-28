@@ -70,11 +70,12 @@ def write_json_tasks(tasklist: list):
             return False
     
 class UserSets(object):
-    def __init__(self, user_id: int, notifytimer: int = 90, notifystyle: bool = False, autostartcreate: bool = False):
+    def __init__(self, user_id: int, notifytimer: int = 90, notifystyle: bool = False, autostartcreate: bool = False, CTask: CryptoTask = CryptoTask):
         self.user_id=user_id
         self.notifytimer = notifytimer
         self.notifystyle = notifystyle
         self.autostartcreate = autostartcreate
+        self.CTask = CTask
 
     def setnewtimer(self, timer: int):
         self.notifytimer = timer
