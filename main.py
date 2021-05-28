@@ -424,6 +424,7 @@ or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for f
 def new_task_loop(message):
     try:
         while(True):
+            time.sleep(1)
             user = retUser(message)
             timer_usr = user.notifytimer
             printer = ""
