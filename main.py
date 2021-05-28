@@ -43,6 +43,7 @@ def retUser(message):
     for user in USERlist:
         if user.user_id == message.chat.id:
             return user
+    print(f"Thread for {message.chat.id} created")
     mainthread = threading.Thread(target=new_task_loop,args=[message])
     mainthread.start()
     NewCT = CT.CryptoTask(user_id=message.chat.id)
