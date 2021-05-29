@@ -252,7 +252,7 @@ def removealltasks(message):
 
 
 #Обработка быстрого изменения таска (через кнопки)
-@bot.callback_query_handler(content_types=['text'], func=lambda call: True and recombos.re_fast_value_change.match(call.data)!= None)
+@bot.callback_query_handler(func=lambda call: True and recombos.re_fast_value_change.match(call.data)!= None)
 def callback_fastChangeValue(call):
     try:
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
@@ -270,7 +270,7 @@ def callback_fastChangeValue(call):
 
 
 #Обработка манипуляциями с заданиями (старт, стоп, изм...)
-@bot.callback_query_handler(content_types=['text'], func=lambda call: True and recombos.task_manupulation_re.match(call.data))
+@bot.callback_query_handler(func=lambda call: True and recombos.task_manupulation_re.match(call.data))
 def callback_taskchanger(call):
     try:
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
@@ -306,7 +306,7 @@ def callback_taskchanger(call):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")
     
 #Обработка кнопок quote    
-@bot.callback_query_handler(content_types=['text'], func=lambda call: True and recombos.create_quote_kb.match(call.data)!= None)
+@bot.callback_query_handler(func=lambda call: True and recombos.create_quote_kb.match(call.data)!= None)
 def callback_create_task_quote(call):
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
     match = recombos.create_quote_kb.match(call.data)
