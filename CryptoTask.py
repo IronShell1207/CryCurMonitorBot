@@ -31,7 +31,7 @@ class CryptoTask(object):
         arr = ">" if self.rofl else "<"
         en = '✅' if self.enable==True else '🛑'
         pr = pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
-        return f" {en} Task ID #{self.id} for pair {self.base}/{self.quote} with limit {arr}{pr}"
+        return f" {en} ID #{self.id} {self.base}/{self.quote} with limit {arr}{pr}"
 
     def ToShortId(self) -> str:
         return f"#{self.id} {self.base}/{self.quote}"
