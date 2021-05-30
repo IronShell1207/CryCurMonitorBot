@@ -45,6 +45,13 @@ def get_create_only():
     markup = InlineKeyboardMarkup([InlineKeyboardButton("Create task 📊",callback_data="createtask")]) 
     return markup
 
+def get_remove_cfrm():
+    markup = InlineKeyboardMarkup(row_width=1)
+    item1 = InlineKeyboardButton("✅ YES remove all", callback_data="removealltasks")
+    item2 = InlineKeyboardButton("❌ No (to spare)", callback_data="none")
+    markup.add(item1, item2)
+    return markup
+
 def get_starttask_keys(idtask: int):
     markup = InlineKeyboardMarkup()
     markup.row_width=2
@@ -58,7 +65,7 @@ def get_en_dis_all_keys():
     markup = InlineKeyboardMarkup()
     item1 = InlineKeyboardButton("Start all ▶️", callback_data="turnontasks")
     item2 = InlineKeyboardButton("Disable all ⏸", callback_data="stopalltasks")
-    item3 = InlineKeyboardButton("❗️Remove all❕", callback_data="removealltasks")
+    item3 = InlineKeyboardButton("❗️Remove all❕", callback_data="removetasksqu")
     markup.add(item1, item2, item3)
     return markup
 

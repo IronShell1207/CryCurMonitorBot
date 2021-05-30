@@ -242,13 +242,14 @@ def setnewvalue(message):
         bot.send_message(chat_id=message.chat.id, text='You have sent wrong value')
         TasksList.append(retUser(message).CTask)
         
-@bot.message_handler(commands=['removeall'])
+
 def removealltasks(message):
+    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring list has been fully removed\nand you have been banned!\n❌❌❌📛📛📛❌❌❌\nJust kidding")
     usertasks = [x for x in TasksList if message.chat.id == x.user_id]
     for taskus in usertasks:
         TasksList.remove(taskus)
     CT.write_json_tasks(TasksList)
-    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring list was been fully removed!")
+    
 
 
 #Обработка быстрого изменения таска (через кнопки)
@@ -264,6 +265,7 @@ def callback_fastChangeValue(call):
         task.price = task.price* (1+procent) if match.group(1) == "up" else task.price* (1-procent)
         task.price = round(task.price,3) if task.price>0.001 else task.price 
         pr = float("{:^10.2f}".format(task.price)) if task.price>0.001 else float("{:^10.8f}".format(task.price))  
+        task.enable = True
         bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved from {old_pr} to {pr} for {task.ToShortId()}")
     except (IndexError):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")
@@ -337,6 +339,8 @@ def callback_query(call):
             stoptasks(call.message)
         elif call.data == "removealltasks":
             removealltasks(call.message)
+        elif call.data == "removetasksqu":
+            bot.send_message(chat_id=call.message.chat.id, text="❌ Are you sure you want to clear the tracking list?\nAction cannot be undone", reply_markup=keyboards.get_remove_cfrm())
         elif call.data == "viewtasks":
             showtasks(call.message)
     except (ValueError):
@@ -379,7 +383,7 @@ def showtasks(message):
 @bot.message_handler(commands=['start'])
 def start(message):
     echo = bot.send_message(chat_id=message.chat.id, 
-    text="Hello! I'm crypto currency exchange monitor bot. I can send you notification when your currency is raise or fall to setted value. \nFor create new task send: /createtask.\nFor get info send: /info\nFor get all available commands send: /help",
+    text="Hello! I'm crypto currency exchange monitor bot. I can send you 💬 notification when your currency is raise 📉 or fall 📈 to setted value 💰. \nFor create new task 🖍 send: /createtask.\nFor get info 📋 send: /info\nFor get all available commands 🔎 send: /help",
     reply_markup=keyboards.get_main_keyboard())
 
 @bot.message_handler(commands=['info'])
@@ -466,7 +470,7 @@ def new_task_loop(message):
                 else:
                     pass
             if printer == "":
-                time.sleep(2.5)
+                time.sleep(4.5)
             elif printer!= "":
                 bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>")
                 time.sleep(timer_usr)
