@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta
 import json
 import itertools
 import os
 
-filename = "tasklist.json"
+filename_tasks = "tasklist.json"
+filename_usrlist = "userlist.json"
 
 class CryptoTask(object):
     id_iter = itertools.count()
@@ -39,16 +41,33 @@ class CryptoTask(object):
 class TaskEncoder(json.JSONEncoder):
     def default(self, Task):
         if isinstance(Task, CryptoTask):
-            return {'id': Task.id,'user_id': Task.user_id,"base": Task.base,"quote": Task.quote,"price": Task.price,"rofl": Task.rofl,"enable": Task.enable}
+            return {'id': Task.id,
+                    'user_id': Task.user_id,
+                    "base": Task.base,
+                    "quote": Task.quote,
+                    "price": Task.price,
+                    "rofl": Task.rofl,
+                    "enable": Task.enable}
         else:
             super().default(self, Task)
             
-    
+
+class UserEncoder(json.JSONEncoder):
+    def default(self, User):
+        if isinstance(User, UserSets):
+            return {'user_id': User.user_id, 
+                    'notifytimer': User.notifytimer, 
+                    'notifystyle': User.notifystyle, 
+                    'autostartcreate' : User.autostartcreate}    
+        else:
+            super().default(self, User)
+
+
 def get_json_task_list():
-    if os.path.isfile(filename):
-        fz = open(filename,'r').read()
+    cryptoData =[]
+    if os.path.isfile(filename_tasks):
+        fz = open(filename_tasks,'r').read()
         data = json.loads(fz)
-        cryptoData =[]
         for item in data:
             dag = CryptoTask(id = item['id'],
                              user_id= item['user_id'],
@@ -56,26 +75,52 @@ def get_json_task_list():
                              quote=item['quote'],
                              price=item['price'],
                              rofl=item['rofl'],
-                             enable=False)
+                             enable=item['enable'])
             cryptoData.append(dag)
-        return cryptoData
+    return cryptoData
     
+
 def write_json_tasks(tasklist: list):
-    with (open(filename, 'w')) as writeFile:
+    with (open(filename_tasks, 'w')) as writeFile:
         try:
             json.dump(obj=tasklist,cls=TaskEncoder,fp=writeFile,indent=2)
-            print(f"{len(tasklist)} tasks writen to {filename}")
+            print(f"{len(tasklist)} tasks writen to {filename_tasks}")
             return True
         except:
             return False
     
+
+def get_json_user_list():
+    userList = []
+    if os.path.isfile(filename_usrlist):
+        fz = open(filename_usrlist,'r').read()
+        data = json.loads(fz)
+        userList = []
+        for usr in data:
+            uz = UserSets(user_id=usr['user_id'],
+                          notifytimer = usr["notifytimer"],
+                          notifystyle = usr['notifystyle'],
+                          autostartcreate = usr['autostartcreate'])  
+            userList.append(uz)
+        return userList
+    return userList
+
+
+def write_json_users(USERlist: list):
+    with (open(filename_usrlist, 'w')) as writeFile:
+       # try:
+        json.dump(obj=USERlist, cls=UserEncoder, fp = writeFile, indent=2)
+        print(f"User list updated. Current users count: {len(USERlist)}")
+        return True
+        #except Exception as en:
+        #    print(f"Error! Can't write user list. Check log {en}")
+        #    return False
+    
+    
 class UserSets(object):
-    def __init__(self, user_id: int, notifytimer: int = 90, notifystyle: bool = False, autostartcreate: bool = False, CTask: CryptoTask = CryptoTask):
+    def __init__(self, user_id: int, notifytimer: int = 90, notifystyle: bool = False, autostartcreate: bool = False, lastnotify: datetime = datetime.now()-timedelta(minutes=2)):
         self.user_id=user_id
         self.notifytimer = notifytimer
         self.notifystyle = notifystyle
         self.autostartcreate = autostartcreate
-        self.CTask = CTask
-
-    def setnewtimer(self, timer: int):
-        self.notifytimer = timer
+        self.lastnotify = lastnotify

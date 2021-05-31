@@ -23,7 +23,7 @@ import keyboards
 import recombos
 
 
-TasksList = []
+#TasksList = []
 #Требуется создать файл config.py и добавить в него строку TOKEN="<ваш токен>"
 tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' else config.TOKEN_px
 bot = telebot.TeleBot(token=tof)
@@ -33,23 +33,23 @@ createRE = re.compile("/(\S+)\s(\S{1,5})\s(\S{1,4})\s(\d+)\s(Fall|Raise)") #/cre
 
 
 mainthread = threading.Thread()
-USERlist=[]
+#USERlist=[]
 
+USERlist = CT.get_json_user_list()
+USERlist = USERlist
 
-tasksjsn = CT.get_json_task_list()
-if tasksjsn != None:
-    TasksList=tasksjsn
+TasksList = CT.get_json_task_list()
+
 
 def retUser(message):
     for user in USERlist:
         if user.user_id == message.chat.id:
             return user
     print(f"Thread for {message.chat.id} created")
-    mainthread = threading.Thread(target=new_task_loop,args=[message])
-    mainthread.start()
     NewCT = CT.CryptoTask(user_id=message.chat.id)
-    user = CT.UserSets(user_id=message.chat.id, notifytimer = 80, CTask=NewCT)
+    user = CT.UserSets(user_id=message.chat.id, notifytimer = 80)
     USERlist.append(user)
+    CT.write_json_users(USERlist)
     return user
 
 
@@ -184,9 +184,11 @@ def task_manage_handler(message):
             return   
         if (taskz == "start" or taskz == "enable"):
             item.enable = True
+            CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=message.chat.id, text=f"✅ Pair {item.ToShortId()} is now monitoring!")
         elif (taskz == "disable" or taskz == "stop"):
             item.enable = False
+            CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=message.chat.id, text=f"❗️Monitoring disabled for {item.ToShortId()}")
         #elif (taskz == "edittask" or taskz == "edit"):
         #    item.enable = False
@@ -237,6 +239,7 @@ def startALLtasks(message):
                 task.enable = True
                 ix+=1
         alreadyon = f"and {len(usertasks)-ix} tasks already ON ✅" if len(usertasks)-ix>0 else ""   
+        CT.write_json_tasks(TasksList)
         bot.send_message(chat_id=message.chat.id, text=f"Your {ix} monitoring tasks are started {alreadyon}\nFor check all your tasks send /showtasks")
     else: 
         bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
@@ -249,6 +252,7 @@ def stoptasks(message):
         for task in usertasks:
             task.enable = False
         bot.send_message(chat_id=message.chat.id, text="⛔️ All tasks are stopped.")
+        CT.write_json_tasks(TasksList)
     else: 
         bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
 
@@ -257,7 +261,7 @@ def setnewvalue(message):
         retUser(message).CTask.price = float(message.text)
         retUser(message).CTask.enable = retUser(message).autostartcreate
         TasksList.append(retUser(message).CTask)
-        
+        CT.write_json_tasks(TasksList)
         bot.send_message(chat_id=message.chat.id, text=f"Task edited! Info:\n\n{retUser(message).CTask.ToString()}")
     except ValueError as ex:
         bot.send_message(chat_id=message.chat.id, text='You have sent wrong value')
@@ -268,8 +272,7 @@ def removealltasks(message):
     bot.send_message(chat_id=message.chat.id, text=f"Your monitoring list has been fully removed\nand you have been banned!\n❌❌❌📛📛📛❌❌❌\nJust kidding")
     usertasks = [x for x in TasksList if message.chat.id == x.user_id]
     for taskus in usertasks:
-        TasksList.remove(taskus)
-        
+        TasksList.remove(taskus)     
     CT.write_json_tasks(TasksList)
     
 
@@ -304,6 +307,7 @@ def callback_taskchanger(call):
         task = [x for x in TasksList if call.message.chat.id == x.user_id and x.id == r_id][0]
         if r_task == "starttask":
             task.enable = True
+            CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=call.message.chat.id, text=f"✅ Pair {task.base}/{task.quote} is now monitoring!") 
         elif r_task == "newv":
             retUser(call.message).CTask = task
@@ -312,6 +316,7 @@ def callback_taskchanger(call):
             bot.register_next_step_handler(echo, callback=setnewvalue)
         elif r_task == "disable":
             task.enable = False
+            CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=call.message.chat.id, text=f"Monitoring of {task.ToShortId()} disabled")
         elif r_task == "edittask":
             bot.send_message(chat_id=call.message.chat.id, 
@@ -319,6 +324,7 @@ def callback_taskchanger(call):
                                     reply_markup=keyboards.get_edit_price_keyboard(task.id,task.rofl,task.enable))
         elif r_task == "overridetask":
             task.price = retUser(call.message).CTask.price
+            CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=call.message.chat.id,
                 text=f"Your task overrided. \nDetails of your task:\n{task.ToString()}", reply_markup=keyboards.get_starttask_keys(r_id))
             CT.write_json_tasks(TasksList)
@@ -469,39 +475,49 @@ or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for f
     
 
 
-def new_task_loop(message):
+def new_task_loop():
     try:
+        print(f"Thread created")
         while(True):
             time.sleep(1)
-            user = retUser(message)
-            timer_usr = user.notifytimer
-            printer = ""
             getcources = ExCuWorker.bin_get_monitor()
-            usertasks = [x for x in TasksList if message.chat.id == x.user_id and x.enable == True]
-            for task in usertasks:
-                getprice = ExCuWorker.bin_monitor(task.base, task.quote, getcources)
-                if getprice == None:
-                    task.enable = False
-                    bot.send_message(chat_id=message.chat.id, text= f"Something went wrong with price checking of pair {task.base}/{task.quote}")
-                    continue
-                taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
-                if task.rofl== True and getprice> task.price:
-                    printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"
-                elif task.rofl == False and getprice<taskprice:
-                    printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n"
+            for user in USERlist:
+                print(f"{user.user_id} updating noficications")
+                timer_usr = user.notifytimer
+                if user.lastnotify>=datetime.datetime.now()-datetime.timedelta(seconds=timer_usr):
+                    printer = ""
+                    usertasks = [x for x in TasksList if user.user_id == x.user_id and x.enable == True]
+                    for task in usertasks:
+                        getprice = ExCuWorker.bin_monitor(task.base, task.quote, getcources)
+                        if getprice == None:
+                            task.enable = False
+                            bot.send_message(chat_id=user.user_id, text= f"Something went wrong with price checking of pair {task.base}/{task.quote}")
+                            continue
+                        taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
+                        if task.rofl== True and getprice> task.price:
+                            printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"
+                        elif task.rofl == False and getprice<taskprice:
+                            printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n"
+                        else:
+                            pass
+                    if printer == "":
+                        time.sleep(1.5)
+                    elif printer!= "":
+                        bot.send_message(chat_id=user.user_id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>")
+                        user.lastnotify = datetime.datetime.now()
+                        #time.sleep(timer_usr)
                 else:
-                    pass
-            if printer == "":
-                time.sleep(4.5)
-            elif printer!= "":
-                bot.send_message(chat_id=message.chat.id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>")
-                time.sleep(timer_usr)
+                    continue   
+            time.sleep(10)
     except ConnectionError as ce:
-        bot.send_message(chat_id=message.chat.id,text=f"There is some problems with api connection\n{str(ce)}")
-        new_task_loop(message)
+        #bot.send_message(chat_id=user.user_id,text=f"There is some problems with api connection\n{str(ce)}")
+        print(f"{datetime.datetime.now()} There is some problems with api connection\n{str(ce)}")
+        
+        new_task_loop()
     except Exception as e:
-        bot.send_message(chat_id=message.chat.id, text=f"Some error occured!\n{str(e)}")
-        new_task_loop(message)
+        print(f"{datetime.datetime.now()} Some error occured!\n{str(e)}")
+        #bot.send_message(chat_id=user.user_id, text=f"Some error occured!\n{str(e)}")
+        new_task_loop()
               
 
 def main_loop():
@@ -509,8 +525,9 @@ def main_loop():
         Binf = str(bot.get_me()).replace("'",'"').replace('None','"None"').replace('False','"False"').replace('True','"True"')
         botinfo = json.loads(Binf)
         print(f"Bot have been started. \nID: {botinfo['id']}\nName: {botinfo['first_name']}\nUserName: {botinfo['username']} ")
+        mainthread = threading.Thread(target=new_task_loop)#,args=[message])
+        mainthread.start()
         bot.polling(none_stop=True) 
-
     except ConnectionError:
         time.sleep(5)
         main_loop()
