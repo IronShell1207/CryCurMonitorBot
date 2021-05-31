@@ -1,3 +1,4 @@
+from logging import makeLogRecord
 import os
 import threading
 from typing import Counter, Text
@@ -151,6 +152,24 @@ def crtask_rofl(message, data):
 #Обработки call-backov 
 
 
+@bot.message_handler(content_types=['text'],func= lambda message: recombos.edit_re.match(message.text)!= None)
+def edittask_handler(message):
+    try:  
+        match = recombos.edit_re.match(message.text)
+        id = match.group(2)
+        item = [x for x in TasksList if x.user_id == message.chat.id and x.id == int(id)][0]
+        price = match.group(4)
+        if price != None:
+            item.price = float(price)
+            bot.send_message(chat_id=message.chat.id, text=f"Task edited! Info:\n\n{item.ToString()}")
+        else:
+            item.enable = False
+            retUser(message).CTask = item
+            bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair:\n{item.ToShortStr()}.\nFor edit price send the new one.\nSelect price changing factor or you can set your value.\n\nElse you can send /edit <id> <new_price> to fast edit!", reply_markup=keyboards.get_edit_price_keyboard(item.id,item.rofl,item.enable))
+    except Exception as ex:
+        bot.send_message(chat_id=message.chat.id, text="🚫 Missing task ID", reply_markup=keyboards.get_startup_keys())
+        
+
 @bot.message_handler(content_types=['text'], func= lambda message: commandsRE.match(message.text) != None)
 def task_manage_handler(message):
     try:
@@ -169,10 +188,10 @@ def task_manage_handler(message):
         elif (taskz == "disable" or taskz == "stop"):
             item.enable = False
             bot.send_message(chat_id=message.chat.id, text=f"❗️Monitoring disabled for {item.ToShortId()}")
-        elif (taskz == "edittask" or taskz == "edit"):
-            item.enable = False
-            retUser(message).CTask = item
-            echo = bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair:\n{item.ToShortStr()}.\nFor edit price send the new one.\nSelect price changing factor or you can set your value.", reply_markup=keyboards.get_edit_price_keyboard(idz,item.rofl,item.enable))
+        #elif (taskz == "edittask" or taskz == "edit"):
+        #    item.enable = False
+        #    retUser(message).CTask = item
+        #    echo = bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair:\n{item.ToShortStr()}.\nFor edit price send the new one.\nSelect price changing factor or you can set your value.", reply_markup=keyboards.get_edit_price_keyboard(idz,item.rofl,item.enable))
         elif (taskz == "remove" or taskz == "delete"):
             item.enable = False
             bot.send_message(chat_id=message.chat.id, text=f"❌ Pair ID {item.id} {item.base}/{item.quote} removed!")
@@ -250,6 +269,7 @@ def removealltasks(message):
     usertasks = [x for x in TasksList if message.chat.id == x.user_id]
     for taskus in usertasks:
         TasksList.remove(taskus)
+        
     CT.write_json_tasks(TasksList)
     
 

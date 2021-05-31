@@ -5,8 +5,8 @@ create_re_price = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w
 create_re_pair = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{2,4})")
 create_univers = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{2,4})(\s+(\S+)|)(\s+(\+|\-)|)")
 #                                       1                       2       3       4       5  6      7    8
-edit_re = re.compile("/edittask\s*(\d+|)")
-
+edit_re = re.compile("/(edittask|edit|change)\s*(\d+|)(\s([0-9.]+)|)")
+                #           1                       2   3  4
 pair_re = re.compile(r'(\w{2,5})/(\w{2,5})')
 ckpr_pair_re = re.compile(r'/price\s(\w{2,5})/(\w{2,5})')
 
