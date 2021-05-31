@@ -236,7 +236,9 @@ def stoptasks(message):
 def setnewvalue(message):
     try:
         retUser(message).CTask.price = float(message.text)
+        retUser(message).CTask.enable = retUser(message).autostartcreate
         TasksList.append(retUser(message).CTask)
+        
         bot.send_message(chat_id=message.chat.id, text=f"Task edited! Info:\n\n{retUser(message).CTask.ToString()}")
     except ValueError as ex:
         bot.send_message(chat_id=message.chat.id, text='You have sent wrong value')
