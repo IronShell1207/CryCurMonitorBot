@@ -69,6 +69,7 @@ def create_task_h(message):
         if cmb != None:
             retUser(message).CTask.base = cmb.group(2).upper()
             retUser(message).CTask.quote = cmb.group(4).upper()
+            retUser(message).CTask.enable = retUser(message).autostartcreate
             pr_ch = ExCuWorker.bin_getCur(retUser(message).CTask.base, retUser(message).CTask.quote)
             if pr_ch != None:
                 if cmb.group(6) == None:
@@ -132,7 +133,7 @@ def crtask_priceset(message):
 #4-й этап (создание таска)
 def crtask_rofl(message, data):
     retUser(message).CTask.rofl = True if data == "CreateRaise" else False
-    retUser(message).CTask.enable = True if retUser(message).autostartcreate == True else False
+    #retUser(message).CTask.enable = True if retUser(message).autostartcreate 
     valuechanging = "Raise 📈" if retUser(message).CTask.rofl else "Fall 📉"
     bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}\n\nYou have selected: {valuechanging}", reply_markup=None)
     varExist = [x for x in TasksList if x.user_id == message.chat.id and x.base == retUser(message).CTask.base and x.quote == retUser(message).CTask.quote and x.rofl == retUser(message).CTask.rofl]
@@ -160,6 +161,7 @@ def edittask_handler(message):
         item = [x for x in TasksList if x.user_id == message.chat.id and x.id == int(id)][0]
         price = match.group(4)
         if price != None:
+            item.enable = retUser(message).autostartcreate
             item.price = float(price)
             bot.send_message(chat_id=message.chat.id, text=f"Task edited! Info:\n\n{item.ToString()}")
         else:
@@ -254,7 +256,7 @@ def stoptasks(message):
         bot.send_message(chat_id=message.chat.id, text="⛔️ All tasks are stopped.")
         CT.write_json_tasks(TasksList)
     else: 
-        bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
+        bot.send_message(chat_id=message.chat.id, text="❌ You have not added any tasks yet! To add new send /createtask")
 
 def setnewvalue(message):
     try:
@@ -264,7 +266,7 @@ def setnewvalue(message):
         CT.write_json_tasks(TasksList)
         bot.send_message(chat_id=message.chat.id, text=f"Task edited! Info:\n\n{retUser(message).CTask.ToString()}")
     except ValueError as ex:
-        bot.send_message(chat_id=message.chat.id, text='You have sent wrong value')
+        bot.send_message(chat_id=message.chat.id, text='❌ You have sent wrong value')
         TasksList.append(retUser(message).CTask)
         
 
@@ -329,11 +331,11 @@ def callback_taskchanger(call):
                 text=f"Your task overrided. \nDetails of your task:\n{task.ToString()}", reply_markup=keyboards.get_starttask_keys(r_id))
             CT.write_json_tasks(TasksList)
         elif r_task == "removetask":
-            bot.send_message(chat_id=call.message.chat.id, text=f"⭕️ Pair ID {task.id} {task.base}/{task.quote} removed!")
+            bot.send_message(chat_id=call.message.chat.id, text=f"❌ Pair ID {task.id} {task.base}/{task.quote} removed!")
             TasksList.remove(task)
             CT.write_json_tasks(TasksList)
-    except (IndexError):
-        bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")
+    except IndexError as exx:
+        bot.send_message(chat_id=call.message.chat.id, text=f"🚫 Action is outdated. {exx}")
     
 #Обработка кнопок quote    
 @bot.callback_query_handler(func=lambda call: True and recombos.create_quote_kb.match(call.data)!= None)
