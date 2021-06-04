@@ -311,6 +311,7 @@ def callback_fastChangeValue(call):
         task.price = round(task.price,3) if task.price>0.001 else task.price 
         pr = float("{:^10.2f}".format(task.price)) if task.price>0.001 else float("{:^10.8f}".format(task.price))  
         task.enable = True
+        CT.write_json_tasks(TasksList)
         bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved from {old_pr} to {pr} for {task.ToShortId()}")
     except (IndexError):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")
