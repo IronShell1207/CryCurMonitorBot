@@ -124,10 +124,12 @@ class UserSets(object):
                  notifystyle: bool = False, 
                  autostartcreate: bool = False, 
                  lastnotify: datetime = datetime.now()-timedelta(minutes=2),
-                 fasteditbtns: bool = True):
+                 fasteditbtns: bool = True,
+                 notifyonce: bool = False):
         self.user_id=user_id
         self.notifytimer = notifytimer
         self.notifystyle = notifystyle
         self.autostartcreate = autostartcreate
         self.lastnotify = lastnotify
         self.fasteditbtns = fasteditbtns
+        self.notifyonce = notifyonce

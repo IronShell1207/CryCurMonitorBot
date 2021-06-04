@@ -170,7 +170,7 @@ def edittask_handler(message):
             retUser(message).CTask = item
             bot.send_message(chat_id=message.chat.id, text=f"🖍 You are editting pair:\n{item.ToShortStr()}.\nFor edit price send the new one.\nSelect price changing factor or you can set your value.\n\nElse you can send /edit <id> <new_price> to fast edit!", reply_markup=keyboards.get_edit_price_keyboard(item.id,item.rofl,item.enable))
     except Exception as ex:
-        bot.send_message(chat_id=message.chat.id, text="🚫 Missing task ID", reply_markup=keyboards.get_startup_keys())
+        bot.send_message(chat_id=message.chat.id, text="🚫 Missing task ID.\nThe command should look like this: \n/edit <task_id> <new_price>* \n* - price is optional", reply_markup=keyboards.get_startup_keys())
         
 
 @bot.message_handler(content_types=['text'], func= lambda message: commandsRE.match(message.text) != None)
@@ -301,7 +301,7 @@ def removealltasks(message):
 @bot.callback_query_handler(func=lambda call: True and recombos.re_fast_value_change.match(call.data)!= None)
 def callback_fastChangeValue(call):
     try:
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
+        #bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}", reply_markup=None)
         match = recombos.re_fast_value_change.match(call.data)
         procent = int(match.group(2))/100
         r_id = int(match.group(3))
@@ -312,7 +312,7 @@ def callback_fastChangeValue(call):
         pr = float("{:^10.2f}".format(task.price)) if task.price>0.001 else float("{:^10.8f}".format(task.price))  
         task.enable = True
         CT.write_json_tasks(TasksList)
-        bot.send_message(chat_id=call.message.chat.id, text=f"☑️ Trigger moved from {old_pr} to {pr} for {task.ToShortId()}")
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{call.message.text}\n\n☑️ Trigger moved from {old_pr} to {pr} for {task.ToShortId()}", reply_markup=None)
     except (IndexError):
         bot.send_message(chat_id=call.message.chat.id, text="🚫 Action is outdated.")
 
@@ -466,7 +466,7 @@ def msg_kb_handler(message):
     elif message.text == "Display rates ✅":
         getrates(message)
 
-@bot.message_handler(content_types=['text'], func=lambda message: message.text in ["🕘Notification timeout","✅Auto enable new task","◀️ Back","📝Show edit buttons"])
+@bot.message_handler(content_types=['text'], func=lambda message: message.text in ["🕘Notification timeout","✅Auto enable new task","◀️ Back","📝Show edit buttons","⛔️ Disable task after trigger"])
 def settings_kb_hand(message):
     if message.text == "✅Auto enable new task":
         user = retUser(message)
@@ -483,7 +483,12 @@ def settings_kb_hand(message):
         retUser(message).fasteditbtns = not retUser(message).fasteditbtns
         pr = "displaying! ✅"  if retUser(message).fasteditbtns else "hidden! ❌"
         CT.write_json_users(USERlist)
-        bot.send_message(chat_id=message.chat.id, text=f"⚠️ Fast edit buttons now {pr}.")
+        bot.send_message(chat_id=message.chat.id, text=f"⚠️ Fast edit buttons now {pr}.", reply_markup=keyboards.get_main_keyboard())
+    elif message.text == "⛔️ Disable task after trigger":
+        retUser(message).notifyonce = not retUser(message).notifyonce 
+        CT.write_json_users(USERlist)
+        reta = "once" if retUser(message).notifyonce else "every time"
+        bot.send_message(chat_id=message.chat.id, text=f"Now task notifications will be triggered {reta}", reply_markup=keyboards.get_main_keyboard())
         
     
         
@@ -502,7 +507,8 @@ or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for f
 8. Delete task /remove <id>
 9. Set notification delay (seconds) - /settimer <secs>
 10. Change notification style from separate messages to single - /setstyle
-11. Get all current exchange rates - /getrates""")
+11. Get all current exchange rates - /getrates
+12. Show tasks by base currency name - /show <base>""")
     
 
 
@@ -529,12 +535,14 @@ def new_task_loop():
                             bot.send_message(chat_id=user.user_id, text= f"Something went wrong with price checking of pair {task.base}/{task.quote}")
                             continue
                         taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
-                        if task.rofl== True and getprice> task.price:
+                        if task.rofl== True and getprice > task.price:
                             kbfastedititems.append(task)
-                            printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"
-                        elif task.rofl == False and getprice<taskprice:
+                            task.enable = task.enable if user.notifyonce == False else False
+                            printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"           
+                        elif task.rofl == False and getprice < taskprice:
                             kbfastedititems.append(task)
-                            printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n"
+                            task.enable = task.enable if user.notifyonce == False else False
+                            printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n" 
                         else:
                             pass
                     if printer == "":
@@ -546,7 +554,7 @@ def new_task_loop():
                         #time.sleep(timer_usr)
                 else:
                     continue   
-            time.sleep(10)
+            time.sleep(0)
     except ConnectionError as ce:
         #bot.send_message(chat_id=user.user_id,text=f"There is some problems with api connection\n{str(ce)}")
         print(f"{datetime.datetime.now()} There is some problems with api connection\n{str(ce)}")

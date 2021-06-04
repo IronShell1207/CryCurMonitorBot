@@ -88,6 +88,7 @@ def get_settings_kb():
     item1 = KeyboardButton("🕘Notification timeout")
     item2 = KeyboardButton("✅Auto enable new task")
     item4 = KeyboardButton("📝Show edit buttons")
+    item4 = KeyboardButton("⛔️ Disable task after trigger")
     item3 = KeyboardButton("◀️ Back")
     markup.add(item1,item2,item4,item3)
     return markup
