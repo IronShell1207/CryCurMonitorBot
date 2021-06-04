@@ -14,6 +14,8 @@ edit_task_re = re.compile("t/newv(\d+)")
 
 re_value_name = re.compile("([A-Z,a-z]{2,5})")
 
+re_show_tasks = re.compile('/(show|showtasks|display)\s(\w{2,5})')
+
 task_manupulation_re = re.compile('t/(\w+)/(\d+)')
 re_fast_value_change = re.compile('t/(\w+)(\d+)/(\d+)')
 

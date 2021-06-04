@@ -214,6 +214,19 @@ def pricecheck(message):
     echo = bot.send_message(chat_id=message.chat.id, text="To check current exchange rates send me currency pair.\n\nFor example: BTC/USDT or RVN/BTC.\nPlease observe this pattern")
     bot.register_next_step_handler(message=echo, callback=pricechecker)
     
+
+@bot.message_handler(content_types=['text'], func=lambda message: recombos.re_show_tasks.match(message.text)!=None)
+def showtasksbyname(message):
+    match = recombos.re_show_tasks.match(message.text).group(2).upper()
+    tasks = [x for x in TasksList if x.base == match]
+    printer = ""
+    if len(tasks)>0:
+        for item in tasks:
+            printer += item.ToShortStr()+"\n"
+        bot.send_message(chat_id=message.chat.id, text=f"Your list with base - {match}:\n\n{printer}")
+    else:
+        bot.send_message(chat_id=message.chat.id, text=f"There is no tasks with base - {match}")
+
 #check price via command
 @bot.message_handler(content_types=['text'], func=lambda message: recombos.ckpr_pair_re.match(message.text)!=None)
 def pricechecker(message):
@@ -230,6 +243,20 @@ def pricechecker(message):
     else:
         bot.send_message(chat_id=message.chat.id, text="You send wrong call.\n You must observe pattern!")
     
+
+
+@bot.message_handler(commands=['stopalltasks','stopall'])
+def stoptasks(message):
+    usertasks = [x for x in TasksList if message.chat.id == x.user_id]
+    if len(usertasks)>0:
+        for task in usertasks:
+            task.enable = False
+        bot.send_message(chat_id=message.chat.id, text="⛔️ All tasks are stopped.")
+        CT.write_json_tasks(TasksList)
+    else: 
+        bot.send_message(chat_id=message.chat.id, text="❌ You have not added any tasks yet! To add new send /createtask")
+
+
 
 @bot.message_handler(commands=['turnontasks', 'startall', 'startalltasks'])
 def startALLtasks(message):
@@ -248,16 +275,6 @@ def startALLtasks(message):
         bot.send_message(chat_id=message.chat.id, text="You have not added any tasks yet! To add new send /createtask")
         
         
-@bot.message_handler(commands=['stopalltasks','stopall'])
-def stoptasks(message):
-    usertasks = [x for x in TasksList if message.chat.id == x.user_id]
-    if len(usertasks)>0:
-        for task in usertasks:
-            task.enable = False
-        bot.send_message(chat_id=message.chat.id, text="⛔️ All tasks are stopped.")
-        CT.write_json_tasks(TasksList)
-    else: 
-        bot.send_message(chat_id=message.chat.id, text="❌ You have not added any tasks yet! To add new send /createtask")
 
 def setnewvalue(message):
     try:
@@ -409,7 +426,7 @@ def showtasks(message):
     usertasks = [x for x in TasksList if message.chat.id == x.user_id]
     for item in usertasks:
         printer += item.ToShortStr()+"\n"
-    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring task list:\n\n{printer}", reply_markup=keyboards.get_en_dis_all_keys())
+    bot.send_message(chat_id=message.chat.id, text=f"Your monitoring task list:\n\n{printer}\n\nTo get filtred list by base send: /show <base currency>", reply_markup=keyboards.get_en_dis_all_keys())
     
     
 @bot.message_handler(commands=['start'])
