@@ -118,9 +118,16 @@ def write_json_users(USERlist: list):
     
     
 class UserSets(object):
-    def __init__(self, user_id: int, notifytimer: int = 90, notifystyle: bool = False, autostartcreate: bool = False, lastnotify: datetime = datetime.now()-timedelta(minutes=2)):
+    def __init__(self, 
+                 user_id: int, 
+                 notifytimer: int = 90, 
+                 notifystyle: bool = False, 
+                 autostartcreate: bool = False, 
+                 lastnotify: datetime = datetime.now()-timedelta(minutes=2),
+                 fasteditbtns: bool = True):
         self.user_id=user_id
         self.notifytimer = notifytimer
         self.notifystyle = notifystyle
         self.autostartcreate = autostartcreate
         self.lastnotify = lastnotify
+        self.fasteditbtns = fasteditbtns

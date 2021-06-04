@@ -29,8 +29,8 @@ def get_remove_edit_kb(idtask: int):
     markup.row_width=2
     item1 =InlineKeyboardButton("Disable ⛔️", callback_data = f"t/disable/{idtask}")
     item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"t/edittask/{idtask}")
-    item3 = InlineKeyboardButton("Add anyway", callback_data=f"createanyway")
-    item4 = InlineKeyboardButton("Override ", callback_data=f"t/overridetask/{idtask}")
+    item3 = InlineKeyboardButton("Add anyway ✅", callback_data=f"createanyway")
+    item4 = InlineKeyboardButton("Override ⬆️", callback_data=f"t/overridetask/{idtask}")
     markup.add(item1, item2, item3, item4)
     return markup
 
@@ -87,12 +87,22 @@ def get_settings_kb():
     
     item1 = KeyboardButton("🕘Notification timeout")
     item2 = KeyboardButton("✅Auto enable new task")
-    markup.add(item1,item2)
+    item4 = KeyboardButton("📝Show edit buttons")
+    item3 = KeyboardButton("◀️ Back")
+    markup.add(item1,item2,item4,item3)
     return markup
 
 def get_quotes_keyboard(listitems: list):
     markup = InlineKeyboardMarkup()  
     for item in listitems:
         ikey = InlineKeyboardButton(item,callback_data=f"n/{item}")
+        markup.add(ikey)
+    return markup
+
+
+def get_fast_edit_kb(listitems: list):
+    markup =InlineKeyboardMarkup()
+    for item in listitems:
+        ikey = InlineKeyboardButton(f"Edit {item.ToShortId()}", callback_data=f"t/edittask/{item.id}")
         markup.add(ikey)
     return markup

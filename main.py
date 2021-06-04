@@ -8,6 +8,7 @@ import json
 import urllib.request
 import requests
 import time
+import datetime
 
 from telebot.types import Message
 import config
@@ -80,7 +81,7 @@ def create_task_h(message):
                 if cmb.group(8) == None:
                     bot.send_message(chat_id=message.chat.id, text = f"Pair {retUser(message).CTask.base}/{retUser(message).CTask.quote} with value {retUser(message).CTask.price} created.\nSelect the movement of value of your pair falling or raising", reply_markup=keyboards.get_raise_fall_kb())
                     return
-                retUser(message).CTask.rofl = True if cmb.group(8) == "+" or cmb.group(8) == "Raise" else None
+                retUser(message).CTask.rofl = True if cmb.group(8) == "+" or cmb.group(8) == "Raise" else False
                 TasksList.append(retUser(message).CTask)
                 CT.write_json_tasks(TasksList)
                 bot.send_message(chat_id=message.chat.id, text = f"✅ Your monitoring task created.\n{retUser(message).CTask.ToString()}", reply_markup=keyboards.get_starttask_keys(retUser(message).CTask.id))
@@ -383,6 +384,7 @@ def set_notify_timer(message):
         user = retUser(message)
         user.notifytimer= timesecs
         bot.send_message(chat_id=message.chat.id, text=f"📣Notification delay setted on {timesecs}sec.🕒")
+        CT.write_json_users(USERlist)
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text="Wrong value!")    
     
@@ -446,15 +448,24 @@ def msg_kb_handler(message):
     elif message.text == "Display rates ✅":
         getrates(message)
 
-@bot.message_handler(content_types=['text'], func=lambda message: message.text in ["🕘Notification timeout","✅Auto enable new task"])
+@bot.message_handler(content_types=['text'], func=lambda message: message.text in ["🕘Notification timeout","✅Auto enable new task","◀️ Back","📝Show edit buttons"])
 def settings_kb_hand(message):
     if message.text == "✅Auto enable new task":
         user = retUser(message)
         user.autostartcreate = not user.autostartcreate
+        CT.write_json_users(USERlist)
         bot.send_message(chat_id=message.chat.id, text=f"Auto enabling new tasks active status: {user.autostartcreate}", reply_markup=keyboards.get_main_keyboard())
     elif message.text == "🕘Notification timeout":
         echo = bot.send_message(chat_id=message.chat.id, text="Send me number of seconds for notification delay (this only works for changing the delay between notifications)", reply_markup=keyboards.get_main_keyboard())
         bot.register_next_step_handler(echo, set_notify_timer)
+        
+    elif message.text == "◀️ Back":
+        bot.send_message(chat_id=message.chat.id, text="Settings have been closed!", reply_markup=keyboards.get_main_keyboard())
+    elif message.text == "📝Show edit buttons":
+        retUser(message).fasteditbtns = not retUser(message).fasteditbtns
+        pr = "displaying! ✅"  if retUser(message).fasteditbtns else "hidden! ❌"
+        CT.write_json_users(USERlist)
+        bot.send_message(chat_id=message.chat.id, text=f"⚠️ Fast edit buttons now {pr}.")
         
     
         
@@ -479,15 +490,19 @@ or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for f
 
 def new_task_loop():
     try:
-        print(f"Thread created")
+        date = datetime.datetime.now()
+        prdate = date.strftime("%Y-%m-%d %H:%M:%S")
+        print(f"{prdate} - Thread created")
         while(True):
             time.sleep(1)
             getcources = ExCuWorker.bin_get_monitor()
             for user in USERlist:
-                print(f"{user.user_id} updating noficications")
+                #print(f"{user.user_id} updating noficications")
                 timer_usr = user.notifytimer
-                if user.lastnotify>=datetime.datetime.now()-datetime.timedelta(seconds=timer_usr):
+                datnow = datetime.datetime.now()
+                if user.lastnotify<=datnow-datetime.timedelta(seconds=timer_usr):
                     printer = ""
+                    kbfastedititems = []
                     usertasks = [x for x in TasksList if user.user_id == x.user_id and x.enable == True]
                     for task in usertasks:
                         getprice = ExCuWorker.bin_monitor(task.base, task.quote, getcources)
@@ -497,15 +512,18 @@ def new_task_loop():
                             continue
                         taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
                         if task.rofl== True and getprice> task.price:
+                            kbfastedititems.append(task)
                             printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"
                         elif task.rofl == False and getprice<taskprice:
+                            kbfastedititems.append(task)
                             printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n"
                         else:
                             pass
                     if printer == "":
                         time.sleep(1.5)
                     elif printer!= "":
-                        bot.send_message(chat_id=user.user_id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>")
+                        rekb = keyboards.get_fast_edit_kb(kbfastedititems) if user.fasteditbtns else None
+                        bot.send_message(chat_id=user.user_id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>",reply_markup=rekb)
                         user.lastnotify = datetime.datetime.now()
                         #time.sleep(timer_usr)
                 else:
