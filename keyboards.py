@@ -2,6 +2,8 @@ from sre_constants import MARK
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import telebot
 
+import kbuttons
+
 def get_raise_fall_kb():
     markup = InlineKeyboardMarkup()
     markup.row_width = 2
@@ -82,15 +84,17 @@ def get_main_keyboard():
     markup.add(item1, item2,item5, item3, item4, item6)
     return markup
 
-def get_settings_kb():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+def get_settings_kb(lng):
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
     
-    item1 = KeyboardButton("🕘Notification timeout")
-    item2 = KeyboardButton("✅Auto enable new task")
-    item4 = KeyboardButton("📝Show edit buttons")
-    item4 = KeyboardButton("⛔️ Disable task after trigger")
-    item3 = KeyboardButton("◀️ Back")
-    markup.add(item1,item2,item4,item3)
+    item1 = KeyboardButton(kbuttons.notify_timeout(lng))
+    item2 = KeyboardButton(kbuttons.auto_enable_not(lng))
+    item4 = KeyboardButton(kbuttons.show_edit_btns(lng))
+    item4 = KeyboardButton(kbuttons.auto_disable_task(lng))
+    item5 = KeyboardButton(kbuttons.language_set(lng))
+    item3 = KeyboardButton(kbuttons.back_sets_btn(lng))
+    
+    markup.add(item1,item2,item4,item5,item3)
     return markup
 
 def get_quotes_keyboard(listitems: list):

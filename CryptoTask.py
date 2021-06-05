@@ -31,9 +31,10 @@ class CryptoTask(object):
     
     def ToShortStr(self) -> str:
         arr = ">" if self.rofl else "<"
+        tred = "📈" if self.rofl else "📉"
         en = '✅' if self.enable==True else '🛑'
         pr = pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
-        return f" {en} ID #{self.id} {self.base}/{self.quote} with limit {arr}{pr}"
+        return f" {en} ID #{self.id} {self.base}/{self.quote} with limit {arr}{pr}{tred}"
 
     def ToShortId(self) -> str:
         return f"#{self.id} {self.base}/{self.quote}"
@@ -120,7 +121,8 @@ def write_json_users(USERlist: list):
 class UserSets(object):
     def __init__(self, 
                  user_id: int, 
-                 notifytimer: int = 90, 
+                 notifytimer: int = 90,
+                 language: str = "eng",
                  notifystyle: bool = False, 
                  autostartcreate: bool = False, 
                  lastnotify: datetime = datetime.now()-timedelta(minutes=2),
@@ -133,3 +135,4 @@ class UserSets(object):
         self.lastnotify = lastnotify
         self.fasteditbtns = fasteditbtns
         self.notifyonce = notifyonce
+        self.language = language
