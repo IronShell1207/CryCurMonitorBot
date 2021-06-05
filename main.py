@@ -218,7 +218,7 @@ def pricecheck(message):
 @bot.message_handler(content_types=['text'], func=lambda message: recombos.re_show_tasks.match(message.text)!=None)
 def showtasksbyname(message):
     match = recombos.re_show_tasks.match(message.text).group(2).upper()
-    tasks = [x for x in TasksList if x.base == match]
+    tasks = [x for x in TasksList if x.base == match and x.user_id == message.chat.id]
     printer = ""
     if len(tasks)>0:
         for item in tasks:
