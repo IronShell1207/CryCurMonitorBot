@@ -16,12 +16,8 @@ import sys
 import itertools
 import datetime
 import re
-import subprocess
-import kbuttons
-
-import mainkb_handler as kb_handler
-
-from Trasnlwrk import Translations as trs
+import subprocess 
+from Translations import settingskb, msg, mainkb
 import ExCuWorker
 import CryptoTask as CT
 import keyboards
@@ -38,11 +34,8 @@ createRE = re.compile("/(\S+)\s(\S{1,5})\s(\S{1,4})\s(\d+)\s(Fall|Raise)") #/cre
 
 
 mainthread = threading.Thread()
-#USERlist=[]
 
 USERlist = CT.get_json_user_list()
-USERlist = USERlist
-
 TasksList = CT.get_json_task_list()
 
 
@@ -56,10 +49,6 @@ def retUser(message):
     USERlist.append(user)
     CT.write_json_users(USERlist)
     return user
-
-
-#xa = [x for x in TasksList if x.user_id == message.chat.id]
-#idxa = [x for x in TasksList if x.id == idx]
 
 
 @bot.message_handler(content_types=["audio", "animation","document", "photo", "sticker", "video", "video_note","none", "voice", "location", "contact", "new_chat_members", "left_chat_member", "new_chat_title", "new_chat_photo", 'delete_chat_photo', 'group_chat_created', 'supergroup_chat_created', 'channel_chat_created', 'migrate_to_chat_id', 'migrate_from_chat_id', 'pinned_message'], func = lambda message: message != None)
@@ -467,50 +456,61 @@ def setstyle(message):
 
 
 
-@bot.message_handler(content_types=['text'], func=lambda message: message.text in kbuttons.get_main_kb_buttons(retUser(message).language))
+@bot.message_handler(content_types=['text'], func=lambda message: message.text in mainkb.get_main_kb_buttons(retUser(message).language))
 def msg_kb_handler(message):
     lng = retUser(message).language
-    if message.text == kbuttons.display_tasks(lng):
+    if message.text == mainkb.display_tasks(lng):
         showtasks(message)
-    elif message.text == kbuttons.create_new_task(lng):
+    elif message.text == mainkb.create_new_task(lng):
         create_task_h(message)
-    elif message.text == kbuttons.start_all_tasks_btn(lng):
+    elif message.text == mainkb.start_all_tasks_btn(lng):
         startALLtasks(message)
-    elif message.text == kbuttons.disable_all_tasks_btn(lng):
+    elif message.text == mainkb.disable_all_tasks_btn(lng):
         stoptasks(message)
-    elif message.text == kbuttons.settings(lng):
+    elif message.text == mainkb.settings(lng):
         user = retUser(message)
         bot.send_message(chat_id=message.chat.id, text=f"Current settings:\nNotifications delay: {user.notifytimer}\nAuto enable new tasks: {user.autostartcreate}", reply_markup=keyboards.get_settings_kb(retUser(message).language))
         return
-    elif message.text == kbuttons.display_rates(lng):
+    elif message.text == mainkb.display_rates(lng):
         getrates(message)
 
 #клавиатура настроек
-@bot.message_handler(content_types=['text'], func=lambda message: message.text in kbuttons.bottom_kb_settings(retUser(message).language)) #["🕘Notification timeout","✅Auto enable new task","◀️ Back","📝Show edit buttons","⛔️ Disable task after trigger"])
+@bot.message_handler(content_types=['text'], func=lambda message: message.text in settingskb.bottom_kb_settings(retUser(message).language))
 def settings_kb_hand(message):
-    if message.text == kbuttons.auto_enable_not(retUser(message).language):
-        user = retUser(message)
+    user = retUser(message)
+    if message.text == settingskb.auto_enable_not(user.language):
         user.autostartcreate = not user.autostartcreate
         CT.write_json_users(USERlist)
-        bot.send_message(chat_id=message.chat.id, text=f"Auto enabling new tasks active status: {user.autostartcreate}", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
-    elif message.text == kbuttons.notify_timeout(retUser(message).language):
-        echo = bot.send_message(chat_id=message.chat.id, text="Send me number of seconds for notification delay (this only works for changing the delay between notifications)", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
+        bot.send_message(chat_id=message.chat.id, text=str.format(msg.autoenable_message(user.language),user.autostartcreate),reply_markup=keyboards.get_main_keyboard(user.language))
+        #7bot.send_message(chat_id=message.chat.id, text=f"Auto enabling new tasks active status: {user.autostartcreate}", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
+    elif message.text == settingskb.notify_timeout(user.language):
+        echo = bot.send_message(chat_id=message.chat.id, text=msg.notification_delay_set(user.language), reply_markup=keyboards.get_main_keyboard(user.language))
         bot.register_next_step_handler(echo, set_notify_timer)
-    elif message.text == kbuttons.back_sets_btn(retUser(message).language):
-        bot.send_message(chat_id=message.chat.id, text="Settings have been closed!", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
-    elif message.text == kbuttons.show_edit_btns(retUser(message).language):
-        retUser(message).fasteditbtns = not retUser(message).fasteditbtns
-        pr = "displaying! ✅"  if retUser(message).fasteditbtns else "hidden! ❌"
+    elif message.text == settingskb.back_sets_btn(user.language):
+        bot.send_message(chat_id=message.chat.id, text="Settings have been closed!", reply_markup=keyboards.get_main_keyboard(user.language))
+    elif message.text == settingskb.show_edit_btns(user.language):
+        user.fasteditbtns = not user.fasteditbtns
+        pr = "displaying! ✅"  if user.fasteditbtns else "hidden! ❌"
         CT.write_json_users(USERlist)
-        bot.send_message(chat_id=message.chat.id, text=f"⚠️ Fast edit buttons now {pr}.", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
-    elif message.text == kbuttons.auto_disable_task(retUser(message).language):
-        retUser(message).notifyonce = not retUser(message).notifyonce 
+        bot.send_message(chat_id=message.chat.id, text=f"⚠️ Fast edit buttons now {pr}.", reply_markup=keyboards.get_main_keyboard(user.language))
+    elif message.text == settingskb.auto_disable_task(user.language):
+        user.notifyonce = not user.notifyonce 
         CT.write_json_users(USERlist)
-        reta = "once" if retUser(message).notifyonce else "every time"
-        bot.send_message(chat_id=message.chat.id, text=f"Now task notifications will be triggered {reta}", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
-    elif message.text == kbuttons.language_set(retUser(message).language):
-        retUser(message).language = "rus" if retUser(message).language == "eng" else "eng"
-        bot.send_message(chat_id=message.chat.id, text="Русский язык включен", reply_markup=keyboards.get_settings_kb(retUser(message).language))
+        reta = "once" if user.notifyonce else "every time"
+        bot.send_message(chat_id=message.chat.id, text=f"Now task notifications will be triggered {reta}", reply_markup=keyboards.get_main_keyboard(user.language))
+    elif message.text == settingskb.language_set(user.language):
+        #retUser(message).language = "rus" if retUser(message).language == "eng" else "eng"
+        bot.send_message(chat_id=message.chat.id, text="Please select the language", reply_markup=keyboards.get_language_keyboard())
+    elif message.text == "🇷🇺 Russian":
+        retUser(message).language = "rus"
+        bot.send_message(chat_id=message.chat.id, text=f"Текущий язык: Русский", reply_markup=keyboards.get_main_keyboard("rus"))
+        CT.write_json_users(USERlist)
+    elif message.text == "🇬🇧 English":
+        retUser(message).language = "eng"
+        bot.send_message(chat_id=message.chat.id, text=f"Current language is: English", reply_markup=keyboards.get_main_keyboard("eng"))
+        CT.write_json_users(USERlist)
+
+
     
         
 @bot.message_handler(commands=['help'])

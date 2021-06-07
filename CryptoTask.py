@@ -59,7 +59,10 @@ class UserEncoder(json.JSONEncoder):
             return {'user_id': User.user_id, 
                     'notifytimer': User.notifytimer, 
                     'notifystyle': User.notifystyle, 
-                    'autostartcreate' : User.autostartcreate}    
+                    'autostartcreate' : User.autostartcreate,
+                    'fasteditbtns' : User.fasteditbtns,
+                    'notifyonce' : User.notifyonce,
+                    'language' : User.language}    
         else:
             super().default(self, User)
 
@@ -101,7 +104,10 @@ def get_json_user_list():
             uz = UserSets(user_id=usr['user_id'],
                           notifytimer = usr["notifytimer"],
                           notifystyle = usr['notifystyle'],
-                          autostartcreate = usr['autostartcreate'])  
+                          autostartcreate = usr['autostartcreate'],
+                          fasteditbtns =  usr['fasteditbtns'],
+                          notifyonce = usr['notifyonce'],
+                          language = usr['language'])  
             userList.append(uz)
         return userList
     return userList

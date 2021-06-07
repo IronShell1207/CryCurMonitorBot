@@ -1,8 +1,9 @@
 from sre_constants import MARK
+from subprocess import call
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import telebot
 
-import kbuttons
+from Translations import settingskb, mainkb
 
 def get_raise_fall_kb():
     markup = InlineKeyboardMarkup()
@@ -65,34 +66,40 @@ def get_starttask_keys(idtask: int):
 
 def get_en_dis_all_keys(lng):
     markup = InlineKeyboardMarkup()
-    item1 = InlineKeyboardButton(kbuttons.start_all_tasks_btn(lng), callback_data="turnontasks")
+    item1 = InlineKeyboardButton(settingskb.start_all_tasks_btn(lng), callback_data="turnontasks")
     item2 = InlineKeyboardButton("Disable all ⏸", callback_data="stopalltasks")
     item3 = InlineKeyboardButton("❗️Remove all❕", callback_data="removetasksqu")
     markup.add(item1, item2, item3)
     return markup
 
+def get_language_keyboard():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    item1 = KeyboardButton("🇬🇧 English")
+    item2 = KeyboardButton("🇷🇺 Russian")
+    markup.add(item1,item2)
+    return markup
 
 def get_main_keyboard(lng):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     
-    item1 = KeyboardButton(kbuttons.display_tasks(lng))
-    item2 = KeyboardButton(kbuttons.create_new_task(lng))
-    item5 = KeyboardButton(kbuttons.settings(lng))
-    item3 = KeyboardButton(kbuttons.start_all_tasks_btn(lng))
-    item4 = KeyboardButton(kbuttons.disable_all_tasks_btn(lng))
-    item6 = KeyboardButton(kbuttons.display_rates(lng))
+    item1 = KeyboardButton(mainkb.display_tasks(lng))
+    item2 = KeyboardButton(mainkb.create_new_task(lng))
+    item5 = KeyboardButton(mainkb.settings(lng))
+    item3 = KeyboardButton(mainkb.start_all_tasks_btn(lng))
+    item4 = KeyboardButton(mainkb.disable_all_tasks_btn(lng))
+    item6 = KeyboardButton(mainkb.display_rates(lng))
     markup.add(item1, item2,item5, item3, item4, item6)
     return markup
 
 def get_settings_kb(lng):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     
-    item1 = KeyboardButton(kbuttons.notify_timeout(lng))
-    item2 = KeyboardButton(kbuttons.auto_enable_not(lng))
-    item4 = KeyboardButton(kbuttons.show_edit_btns(lng))
-    item4 = KeyboardButton(kbuttons.auto_disable_task(lng))
-    item5 = KeyboardButton(kbuttons.language_set(lng))
-    item3 = KeyboardButton(kbuttons.back_sets_btn(lng))
+    item1 = KeyboardButton(settingskb.notify_timeout(lng))
+    item2 = KeyboardButton(settingskb.auto_enable_not(lng))
+    item4 = KeyboardButton(settingskb.show_edit_btns(lng))
+    item4 = KeyboardButton(settingskb.auto_disable_task(lng))
+    item5 = KeyboardButton(settingskb.language_set(lng))
+    item3 = KeyboardButton(settingskb.back_sets_btn(lng))
     
     markup.add(item1,item2,item4,item5,item3)
     return markup
