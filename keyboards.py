@@ -63,24 +63,24 @@ def get_starttask_keys(idtask: int):
     markup.add(item1, item2, item3)
     return markup
 
-def get_en_dis_all_keys():
+def get_en_dis_all_keys(lng):
     markup = InlineKeyboardMarkup()
-    item1 = InlineKeyboardButton("Start all ▶️", callback_data="turnontasks")
+    item1 = InlineKeyboardButton(kbuttons.start_all_tasks_btn(lng), callback_data="turnontasks")
     item2 = InlineKeyboardButton("Disable all ⏸", callback_data="stopalltasks")
     item3 = InlineKeyboardButton("❗️Remove all❕", callback_data="removetasksqu")
     markup.add(item1, item2, item3)
     return markup
 
 
-def get_main_keyboard():
+def get_main_keyboard(lng):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     
-    item1 = KeyboardButton("Display tasks list 📝")
-    item2 = KeyboardButton("Create new 📊")
-    item5 = KeyboardButton("Settings ⚙️")
-    item3 = KeyboardButton("Start all ▶️")
-    item4 = KeyboardButton("Disable all ⏸")
-    item6 = KeyboardButton("Display rates ✅")
+    item1 = KeyboardButton(kbuttons.display_tasks(lng))
+    item2 = KeyboardButton(kbuttons.create_new_task(lng))
+    item5 = KeyboardButton(kbuttons.settings(lng))
+    item3 = KeyboardButton(kbuttons.start_all_tasks_btn(lng))
+    item4 = KeyboardButton(kbuttons.disable_all_tasks_btn(lng))
+    item6 = KeyboardButton(kbuttons.display_rates(lng))
     markup.add(item1, item2,item5, item3, item4, item6)
     return markup
 

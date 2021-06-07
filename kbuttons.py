@@ -40,3 +40,43 @@ def bottom_kb_settings(lng):
             show_edit_btns(lng),auto_disable_task(lng),
             language_set(lng),back_sets_btn(lng)]
 
+
+
+def display_tasks(lng):
+    if lng == "eng":
+        return "Display tasks list 📝"
+    elif lng == "rus":
+        return "Список заданий 📝"
+
+def create_new_task(lng):
+    if lng == "eng":
+        return "Create new 📊"
+    elif lng == "rus":
+        return "Создать 📊"
+
+def settings(lng):
+    if lng == "eng":
+        return "Settings ⚙️"
+    elif lng == "rus":
+        return "Установки ⚙️"
+
+def start_all_tasks_btn(lng):
+    if lng == "eng":
+        return "Start all ▶️"
+    elif lng == "rus":
+        return "Запуск всех ▶️"
+def disable_all_tasks_btn(lng):
+    if lng == "eng":
+        return "Disable all ⏸"
+    elif lng == "rus":
+        return "Выкл. все задания ⏸"
+def display_rates(lng):
+    if lng == "eng":
+        return "Display rates ✅"
+    elif lng == "rus":
+        return "Тек. цены по заданиям ✅"
+    
+def get_main_kb_buttons(lng):
+    return [display_tasks(lng),create_new_task(lng),
+            settings(lng),start_all_tasks_btn(lng),
+            disable_all_tasks_btn(lng),display_rates(lng)]
