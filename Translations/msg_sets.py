@@ -26,3 +26,14 @@ def once_notify_txt(lang, eod):
         return f"Уведомления о изменениях теперь срабатывают {ans}"
     ans = "every time" if eod else "once"
     return f"Now task notifications will be triggered {ans}"
+
+def notify_timer(lang, sec):
+    if lang == "rus":
+        return f"📣Задержка между уведомлениями об изменениях курсов установлено на {sec}сек.🕒"
+    return f"📣Notification delay setted on {sec}sec.🕒"
+
+def wrong_value(lang):
+    if lang == "rus":
+        return "❌Неправильно указано значение!"
+    return "❌Wrong value!"
+

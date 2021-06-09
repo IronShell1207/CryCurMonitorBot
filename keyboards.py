@@ -45,7 +45,9 @@ def get_startup_keys():
     return markup
 
 def get_create_only():
-    markup = InlineKeyboardMarkup([InlineKeyboardButton("Create task 📊",callback_data="createtask")]) 
+    markup = InlineKeyboardMarkup() 
+    item = InlineKeyboardButton("Create task 📊",callback_data="createtask")
+    markup.add(item)
     return markup
 
 def get_remove_cfrm():
