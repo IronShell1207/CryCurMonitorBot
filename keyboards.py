@@ -3,74 +3,76 @@ from subprocess import call
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 import telebot
 
-from Translations import settingskb, mainkb
+from Translations import settingskb, mainkb, inlineKB
 
-def get_raise_fall_kb():
+def get_raise_fall_kb(lng):
     markup = InlineKeyboardMarkup()
     markup.row_width = 2
-    markup.add(InlineKeyboardButton("Raise 📈", callback_data = "CreateRaise"), InlineKeyboardButton("Fall 📉", callback_data = "CreateFall"))
+    item1 = InlineKeyboardButton(inlineKB.raise_val(lng),callback_data = "CreateRaise")
+    item2 = InlineKeyboardButton(inlineKB.fall(lng), callback_data = "CreateFall")
+    markup.add(item1, item2 )
     return markup
 
 
-def get_edit_price_keyboard(idtask: int, rofl: bool, enable: bool):
+def get_edit_price_keyboard(lng,idtask: int, rofl: bool, enable: bool):
     markup = InlineKeyboardMarkup()
     markup.row_width = 3
     itemROD = "🔺 by +{0}%" if rofl else "🔻 by -{0}%"
     itemROData = "t/up{0}/"+str(idtask) if rofl else "t/dn{0}/"+str(idtask)
-    item1 = InlineKeyboardButton("Disable ⛔️", callback_data = f"t/disable/{idtask}") if enable == True else InlineKeyboardButton("Start ✅", callback_data = f"t/starttask/{idtask}")
+    item1 = InlineKeyboardButton(inlineKB.disabletask(lng), callback_data = f"t/disable/{idtask}") if enable == True else InlineKeyboardButton("Start ✅", callback_data = f"t/starttask/{idtask}")
     #item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"t/edittask/{idtask}")
     item3 = InlineKeyboardButton(itemROD.format("5"), callback_data = itemROData.format(5))
     item4 = InlineKeyboardButton(itemROD.format("2"), callback_data = itemROData.format(2))
     item5 = InlineKeyboardButton(itemROD.format("1"), callback_data = itemROData.format(1))
-    item6 = InlineKeyboardButton("New value ✏️", callback_data=f"t/newv/{str(idtask)}")
-    #item3 =InlineKeyboardButton("Remove task ❌", callback_data=f"t/removetask/{idtask}")
-    markup.add(item5, item4 ,item3,item1,item6)
+    item6 = InlineKeyboardButton(inlineKB.newvalue(lng), callback_data=f"t/newv/{str(idtask)}")
+    item7 =InlineKeyboardButton(inlineKB.removetask(lng), callback_data=f"t/removetask/{idtask}")
+    markup.add(item5, item4 ,item3,item1,item6, item7)
     return markup
 
-def get_remove_edit_kb(idtask: int):
+def get_remove_edit_kb(lng, idtask: int):
     markup = InlineKeyboardMarkup()
     markup.row_width=2
-    item1 =InlineKeyboardButton("Disable ⛔️", callback_data = f"t/disable/{idtask}")
-    item2 =InlineKeyboardButton("Edit task ✏️", callback_data = f"t/edittask/{idtask}")
-    item3 = InlineKeyboardButton("Add anyway ✅", callback_data=f"createanyway")
-    item4 = InlineKeyboardButton("Override ⬆️", callback_data=f"t/overridetask/{idtask}")
+    item1 =InlineKeyboardButton(inlineKB.disabletask(lng), callback_data = f"t/disable/{idtask}")
+    item2 =InlineKeyboardButton(inlineKB.edit_task(lng), callback_data = f"t/edittask/{idtask}")
+    item3 = InlineKeyboardButton(inlineKB.add_anyway(lng), callback_data=f"createanyway")
+    item4 = InlineKeyboardButton(inlineKB.override(lng), callback_data=f"t/overridetask/{idtask}")
     markup.add(item1, item2, item3, item4)
     return markup
 
-def get_startup_keys():
+def get_startup_keys(lng):
     markup = InlineKeyboardMarkup()
-    item1 = InlineKeyboardButton("Create new task 📊", callback_data="createtask")
-    item2 = InlineKeyboardButton("View my tasks 📝",callback_data="viewtasks")
+    item1 = InlineKeyboardButton(inlineKB.create_task(lng), callback_data="createtask")
+    item2 = InlineKeyboardButton(inlineKB.check_tasks(lng),callback_data="viewtasks")
     markup.add(item1, item2)
     return markup
 
-def get_create_only():
+def get_create_only(lng):
     markup = InlineKeyboardMarkup() 
-    item = InlineKeyboardButton("Create task 📊",callback_data="createtask")
+    item = InlineKeyboardButton(inlineKB.create_task(lng),callback_data="createtask")
     markup.add(item)
     return markup
 
-def get_remove_cfrm():
+def get_remove_cfrm(lng):
     markup = InlineKeyboardMarkup(row_width=1)
-    item1 = InlineKeyboardButton("✅ YES remove all", callback_data="removealltasks")
-    item2 = InlineKeyboardButton("❌ No (to spare)", callback_data="none")
+    item1 = InlineKeyboardButton(inlineKB.remove_all_yes(lng), callback_data="removealltasks")
+    item2 = InlineKeyboardButton(inlineKB.remove_all_no(lng), callback_data="none")
     markup.add(item1, item2)
     return markup
 
-def get_starttask_keys(idtask: int):
+def get_starttask_keys(lng, idtask: int):
     markup = InlineKeyboardMarkup()
     markup.row_width=2
-    item1 = InlineKeyboardButton("Start task ✅", callback_data=f"t/starttask/{idtask}")
-    item2 = InlineKeyboardButton("New task 📊", callback_data=f"createtask")
-    item3 = InlineKeyboardButton("View my tasks 📝",callback_data="viewtasks")
+    item1 = InlineKeyboardButton(inlineKB.starttask(lng), callback_data=f"t/starttask/{idtask}")
+    item2 = InlineKeyboardButton(inlineKB.create_task(lng), callback_data=f"createtask")
+    item3 = InlineKeyboardButton(inlineKB.check_tasks(lng),callback_data="viewtasks")
     markup.add(item1, item2, item3)
     return markup
 
 def get_en_dis_all_keys(lng):
     markup = InlineKeyboardMarkup()
     item1 = InlineKeyboardButton(mainkb.start_all_tasks_btn(lng), callback_data="turnontasks")
-    item2 = InlineKeyboardButton("Disable all ⏸", callback_data="stopalltasks")
-    item3 = InlineKeyboardButton("❗️Remove all❕", callback_data="removetasksqu")
+    item2 = InlineKeyboardButton(inlineKB.stop_all(lng), callback_data="stopalltasks")
+    item3 = InlineKeyboardButton(inlineKB.remove_all(lng), callback_data="removetasksqu")
     markup.add(item1, item2, item3)
     return markup
 
@@ -114,9 +116,9 @@ def get_quotes_keyboard(listitems: list):
     return markup
 
 
-def get_fast_edit_kb(listitems: list):
+def get_fast_edit_kb(lng, listitems: list):
     markup =InlineKeyboardMarkup()
     for item in listitems:
-        ikey = InlineKeyboardButton(f"Edit {item.ToShortId()}", callback_data=f"t/edittask/{item.id}")
+        ikey = InlineKeyboardButton(f"{inlineKB.edit_task(lng)} {item.ToShortId()}", callback_data=f"t/edittask/{item.id}")
         markup.add(ikey)
     return markup

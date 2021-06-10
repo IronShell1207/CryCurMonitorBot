@@ -59,37 +59,38 @@ def handshit(message):
 
 @bot.message_handler(content_types=['text'], func= lambda message: ('createtask' in message.text or 'create' in message.text or 'newtask' in message.text) or recombos.create_univers.match(message.text) != None)
 def create_task_h(message):
+    user = retUser(message)
     try: 
         cmb = recombos.create_univers.match(message.text)
-        retUser(message).CTask = CT.CryptoTask(user_id=message.chat.id)
+        user.CTask = CT.CryptoTask(user_id=message.chat.id)
         if cmb != None:
-            retUser(message).CTask.base = cmb.group(2).upper()
-            retUser(message).CTask.quote = cmb.group(4).upper()
-            retUser(message).CTask.enable = retUser(message).autostartcreate
-            pr_ch = ExCuWorker.bin_getCur(retUser(message).CTask.base, retUser(message).CTask.quote)
+            user.CTask.base = cmb.group(2).upper()
+            user.CTask.quote = cmb.group(4).upper()
+            user.CTask.enable = user.autostartcreate
+            pr_ch = ExCuWorker.bin_getCur(user.CTask.base, user.CTask.quote)
             if pr_ch != None:
                 if cmb.group(6) == None:
-                    echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.created_task_without_price(retUser(message).language,retUser(message).CTask.base,retUser(message).CTask.quote))
+                    echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.created_task_without_price(user.language,user.CTask.base,user.CTask.quote))
                     bot.register_next_step_handler(echo, crtask_priceset)
                     return
-                retUser(message).CTask.price = float(cmb.group(6))
+                user.CTask.price = float(cmb.group(6))
                 if cmb.group(8) == None:
                     bot.send_message(chat_id=message.chat.id, text = 
-                                     msg_tasks.created_task_without_rofl(retUser(message).language, 
-                                                                        retUser(message).CTask.base,
-                                                                        retUser(message).CTask.quote, 
-                                                                        retUser(message).CTask.price), 
-                                            reply_markup=keyboards.get_raise_fall_kb())
+                                     msg_tasks.created_task_without_rofl(user.language, 
+                                                                        user.CTask.base,
+                                                                        user.CTask.quote, 
+                                                                        user.CTask.price), 
+                                            reply_markup=keyboards.get_raise_fall_kb(user.language))
                     return #f"Pair {retUser(message).CTask.base}/{retUser(message).CTask.quote} with value {retUser(message).CTask.price} created.\nSelect the movement of value of your pair falling or raising"
-                retUser(message).CTask.rofl = True if cmb.group(8) == "+" or cmb.group(8) == "Raise" else False
-                TasksList.append(retUser(message).CTask)
+                user.CTask.rofl = True if cmb.group(8) == "+" or cmb.group(8) == "Raise" else False
+                TasksList.append(user.CTask)
                 CT.write_json_tasks(TasksList)
-                bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_fully(retUser(message).language, retUser(message).CTask), reply_markup=keyboards.get_starttask_keys(retUser(message).CTask.id))
+                bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_fully(user.language, user.CTask), reply_markup=keyboards.get_starttask_keys(user.CTask.id))
                 return
             else:
-                bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_error_pair(retUser(message).language))
+                bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_error_pair(user.language))
         else:
-            echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.created_task_command_only(retUser(message).language))
+            echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.created_task_command_only(user.language))
             bot.register_next_step_handler(echo, crtask_baseset)
             return
     except ValueError as ex :
@@ -106,9 +107,9 @@ def crtask_baseset(message):
                              text=msg_tasks.creation_base_setted(retUser(message).language, retUser(message).CTask.base), 
                              reply_markup=keyboards.get_quotes_keyboard(quotes_stack))
         else:
-            bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only())
+            bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
     else:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only())
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
 
 """
 #2-й этап   не юзается  
@@ -131,9 +132,9 @@ def crtask_quotetask(message):
 def crtask_priceset(message):
     try:
         retUser(message).CTask.price = float(str(message.text).replace(',','.'))
-        echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_setted(retUser(message).language, retUser(message).CTask), reply_markup = keyboards.get_raise_fall_kb())
+        echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_setted(retUser(message).language, retUser(message).CTask), reply_markup = keyboards.get_raise_fall_kb(retUser(message).language))
     except (ValueError):
-        echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_error(retUser(message).language), reply_markup = keyboards.get_startup_keys())
+        echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_error(retUser(message).language), reply_markup = keyboards.get_startup_keys(retUser(message).language))
 
 #4-й этап (создание таска)
 def crtask_rofl(message, data):
@@ -143,13 +144,13 @@ def crtask_rofl(message, data):
     bot.edit_message_text(chat_id=message.chat.id, message_id=message.message_id, text=f"{message.text}\n\n{msg_tasks.creation_selected(retUser(message).language)} {valuechanging}", reply_markup=None)
     varExist = [x for x in TasksList if x.user_id == message.chat.id and x.base == retUser(message).CTask.base and x.quote == retUser(message).CTask.quote and x.rofl == retUser(message).CTask.rofl]
     if len(varExist)>0 and varExist != None:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_final_already_have(retUser(message).language,retUser(message).CTask,varExist[0]), reply_markup=keyboards.get_remove_edit_kb(varExist[0].id))
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_final_already_have(retUser(message).language,retUser(message).CTask,varExist[0]), reply_markup=keyboards.get_remove_edit_kb(retUser(message).language, varExist[0].id))
         return
     TasksList.append(retUser(message).CTask)
     CT.write_json_tasks(TasksList)
     bot.send_message(chat_id=message.chat.id, 
     text=msg_tasks.created_task_fully(retUser(message).language, retUser(message).CTask), 
-                    reply_markup=keyboards.get_starttask_keys(retUser(message).CTask.id))
+                    reply_markup=keyboards.get_starttask_keys(retUser(message).language, retUser(message).CTask.id))
     
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
@@ -171,9 +172,9 @@ def edittask_handler(message):
         else:
             item.enable = False
             retUser(message).CTask = item
-            bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task(retUser(message).language,item), reply_markup=keyboards.get_edit_price_keyboard(item.id,item.rofl,item.enable))
+            bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task(retUser(message).language,item), reply_markup=keyboards.get_edit_price_keyboard(retUser(message).language,item.id,item.rofl,item.enable))
     except Exception as ex:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task_error(retUser(message).language), reply_markup=keyboards.get_startup_keys())
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task_error(retUser(message).language), reply_markup=keyboards.get_startup_keys(retUser(message).language))
         
 
 @bot.message_handler(content_types=['text'], func= lambda message: commandsRE.match(message.text) != None)
@@ -186,7 +187,7 @@ def task_manage_handler(message):
             set_notify_timer(message)
         item = [x for x in TasksList if x.user_id == message.chat.id and x.id == idz][0]
         if item == None:
-            bot.send_message(chat_id=message.chat.id, text=msg_tasks.id_error(retUser(message).language), reply_markup=keyboards.get_startup_keys())
+            bot.send_message(chat_id=message.chat.id, text=msg_tasks.id_error(retUser(message).language), reply_markup=keyboards.get_startup_keys(retUser(message).language))
             return   
         if (taskz == "start" or taskz == "enable"):
             item.enable = True
@@ -202,10 +203,10 @@ def task_manage_handler(message):
             CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=message.chat.id, text=msg_tasks.pair_removed(retUser(message).language, item))
     except (IndexError):
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.id_error(retUser(message).language), reply_markup=keyboards.get_startup_keys())
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.id_error(retUser(message).language), reply_markup=keyboards.get_startup_keys(retUser(message).language))
         return
     except (ValueError):
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.id_error(retUser(message).language), reply_markup=keyboards.get_startup_keys())
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.id_error(retUser(message).language), reply_markup=keyboards.get_startup_keys(retUser(message).language))
 
 
 @bot.message_handler(content_types=['text'], commands=["checkprice"])
@@ -253,7 +254,7 @@ def stoptasks(message):
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.stop_all_tasks(retUser(message).language))
         CT.write_json_tasks(TasksList)
     else: 
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only())
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
 
 
 
@@ -271,20 +272,21 @@ def startALLtasks(message):
         CT.write_json_tasks(TasksList)
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.start_all_tasks(retUser(message).language,ix, alreadyon))
     else: 
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only())
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
         
         
 
 def setnewvalue(message):
     try:
-        retUser(message).CTask.price = float(message.text)
-        retUser(message).CTask.enable = retUser(message).autostartcreate
-        TasksList.append(retUser(message).CTask)
+        user = retUser(message)
+        user.CTask.price = float(message.text)
+        user.CTask.enable = user.autostartcreate
+        TasksList.append(user.CTask)
         CT.write_json_tasks(TasksList)
-        bot.send_message(chat_id=message.chat.id, text=f"{msg_tasks.editted_task_info(retUser(message).language)}{retUser(message).CTask.ToString()}")
+        bot.send_message(chat_id=message.chat.id, text=f"{msg_tasks.editted_task_info(user.language)}{retUser(message).CTask.ToString(user.language)}")
     except ValueError as ex:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.wrong_value_error(retUser(message).language))
-        TasksList.append(retUser(message).CTask)
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.wrong_value_error(user.language))
+        TasksList.append(user.CTask)
         
 
 def removealltasks(message):
@@ -341,12 +343,12 @@ def callback_taskchanger(call):
         elif r_task == "edittask":
             bot.send_message(chat_id=call.message.chat.id, 
                                     text=msg_tasks.task_edit_request(retUser(call.message).language, task), 
-                                    reply_markup=keyboards.get_edit_price_keyboard(task.id,task.rofl,task.enable))
+                                    reply_markup=keyboards.get_edit_price_keyboard(retUser(call.message).language,task.id,task.rofl,task.enable))
         elif r_task == "overridetask":
             task.price = retUser(call.message).CTask.price
             CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=call.message.chat.id,
-                text=msg_tasks.task_new_override(retUser(call.message).language, task), reply_markup=keyboards.get_starttask_keys(r_id))
+                text=msg_tasks.task_new_override(retUser(call.message).language, task), reply_markup=keyboards.get_starttask_keys(retUser(call.message).language,r_id))
             CT.write_json_tasks(TasksList)
         elif r_task == "removetask":
             bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.pair_removed(retUser(call.message).language,task))
@@ -390,7 +392,7 @@ def callback_query(call):
         elif call.data == "removealltasks":
             removealltasks(call.message)
         elif call.data == "removetasksqu":
-            bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.clear_tasks_list_request(retUser(call.message).language), reply_markup=keyboards.get_remove_cfrm())
+            bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.clear_tasks_list_request(retUser(call.message).language), reply_markup=keyboards.get_remove_cfrm(retUser(call.message).language))
         elif call.data == "viewtasks":
             showtasks(call.message)
     except (ValueError):
@@ -418,7 +420,7 @@ def getrates(message):
     if printer!="":
         bot.send_message(chat_id=message.chat.id, text=f"{msg_tasks.return_rates_tasks(retUser(message).language)}{printer}")
     else:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only())
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
             
     
 @bot.message_handler(commands=['showtasks', 'viewtasks', 'checktasks'])
@@ -431,7 +433,7 @@ def showtasks(message):
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.return_monitoring_list(retUser(message).language,printer), reply_markup=keyboards.get_en_dis_all_keys(retUser(message).language))
     else:
         bot.send_message(chat_id=message.chat.id, 
-        text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only())
+        text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
     
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -445,7 +447,7 @@ def start(message):
 @bot.message_handler(commands=['info'])
 def infohelp(message):
     bot.send_message(chat_id=message.chat.id, 
-                     text=f"This bot is written on Python with pyTelegramBotApi library. This bot uses realtime binance exchange rates, and exchange rates updates every second!\n⛏ Developer: Ironshell\n🛸 Github: https://github.com/IronShell1207/CryCurMonitorBot\n\nIf bot is usefull for you, you can buy my a ☕️ and thx 2u).\n🥇ETH: 0xa35fbab442da4e65413045a4b9b147e2a0fc3e0c\n🎈LTC: LQiBdMeCNWAcSBEhc2QT3ffFz8a2t7zPcG")
+                     text=msg_tasks.info_bot(retUser(message).language))
 
 #Временно не работает
 #@bot.message_handler(commands=['setstyle'])
@@ -471,7 +473,7 @@ def msg_kb_handler(message):
         stoptasks(message)
     elif message.text == mainkb.settings(lng):
         user = retUser(message)
-        bot.send_message(chat_id=message.chat.id, text=f"Current settings:\nNotifications delay: {user.notifytimer}\nAuto enable new tasks: {user.autostartcreate}", reply_markup=keyboards.get_settings_kb(retUser(message).language))
+        bot.send_message(chat_id=message.chat.id, text=msg_sets.current_sets(retUser(message)), reply_markup=keyboards.get_settings_kb(retUser(message).language))
         return
     elif message.text == mainkb.display_rates(lng):
         getrates(message)
@@ -480,12 +482,12 @@ def msg_kb_handler(message):
 @bot.message_handler(content_types=['text'], func=lambda message: message.text in settingskb.bottom_kb_settings(retUser(message).language))
 def settings_kb_hand(message):
     user = retUser(message)
-    if message.text == settingskb.auto_enable_not(user.language):
+    if message.text == settingskb.auto_enable_not("rus") or message.text == settingskb.auto_enable_not():
         user.autostartcreate = not user.autostartcreate
         CT.write_json_users(USERlist)
         bot.send_message(chat_id=message.chat.id, text=str.format(msg_sets.autoenable_message(user.language),user.autostartcreate),reply_markup=keyboards.get_main_keyboard(user.language))
         #7bot.send_message(chat_id=message.chat.id, text=f"Auto enabling new tasks active status: {user.autostartcreate}", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
-    elif message.text == settingskb.notify_timeout(user.language):
+    elif message.text == settingskb.notify_timeout("rus") or message.text == settingskb.notify_timeout():
         echo = bot.send_message(chat_id=message.chat.id, text=msg_sets.notification_delay_set(user.language), reply_markup=keyboards.get_main_keyboard(user.language))
         bot.register_next_step_handler(echo, set_notify_timer)
     elif message.text == settingskb.back_sets_btn(user.language):
@@ -515,20 +517,7 @@ def settings_kb_hand(message):
 @bot.message_handler(commands=['help'])
 def help(message):
     echo = bot.send_message(chat_id=message.chat.id,
-                            text="""Commands list:
-1. Create new monitoring task - /createtask
-or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for falling price)
-2. Start all monitoring tasks - /turnontasks
-3. Stop all monitoring tasks - /stopalltasks
-4. Show all tasks /showtasks
-5. Disable monitoring by ID - /disable <id>
-6. Start monitoring by ID - /enable <id>
-7. Edit task - /edit <id>
-8. Delete task /remove <id>
-9. Set notification delay (seconds) - /settimer <secs>
-10. Change notification style from separate messages to single - /setstyle
-11. Get all current exchange rates - /getrates
-12. Show tasks by base currency name - /show <base>""")
+                            text=msg_sets.commands_list(retUser(message).language))
     
 
 
@@ -552,24 +541,24 @@ def new_task_loop():
                         getprice = ExCuWorker.bin_monitor(task.base, task.quote, getcources)
                         if getprice == None:
                             task.enable = False
-                            bot.send_message(chat_id=user.user_id, text= f"Something went wrong with price checking of pair {task.base}/{task.quote}")
+                            bot.send_message(chat_id=user.user_id, text= msg_tasks.loop_error_pair(user.language))
                             continue
                         taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
                         if task.rofl== True and getprice > task.price:
                             kbfastedititems.append(task)
                             task.enable = task.enable if user.notifyonce == False else False
-                            printer += f"🔺 [ID {task.id}] {task.base}/{task.quote} already raise 📈 from {taskprice} to {getprice}!\n"           
+                            printer += msg_tasks.task_printer_raise(user.language,task,getprice)
                         elif task.rofl == False and getprice < taskprice:
                             kbfastedititems.append(task)
                             task.enable = task.enable if user.notifyonce == False else False
-                            printer += f"🔻 [ID {task.id}] {task.base}/{task.quote} already fall 📉 from {taskprice} to {getprice}!\n" 
+                            printer += msg_tasks.task_printer_fall(user.language,task,getprice)
                         else:
                             pass
                     if printer == "":
                         time.sleep(1.5)
                     elif printer!= "":
-                        rekb = keyboards.get_fast_edit_kb(kbfastedititems) if user.fasteditbtns else None
-                        bot.send_message(chat_id=user.user_id, text=f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>",reply_markup=rekb)
+                        rekb = keyboards.get_fast_edit_kb(user.language,kbfastedititems) if user.fasteditbtns else None
+                        bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer),reply_markup=rekb)
                         user.lastnotify = datetime.datetime.now()
                         #time.sleep(timer_usr)
                 else:

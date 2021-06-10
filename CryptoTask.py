@@ -24,17 +24,22 @@ class CryptoTask(object):
         self.rofl = rofl
         self.enable = enable
         
-    def ToString(self) -> str:
+    def ToString(self, lng) -> str:
         arr = ">" if self.rofl else "<"
+        tred = "📈" if self.rofl else "📉"
+        en = '✅' if self.enable==True else '🛑'
         pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
-        return f"Currency monitor task #{self.id}.\n\nEnabled: {self.enable}\nBase currency: {self.base}\nQuote currency: {self.quote}\nWaiting for price: {arr}{pr}"
+        if lng == "rus":
+            return f"Задание мониторинга обмена курса #{self.id}\nАктивирован: {self.enable}{en}\nБазовая валюта: {self.base}\nОбменная валюта: {self.quote}\nОжидаемая цена: {arr}{pr}{tred}"
+        elif lng == "eng":
+            return f"Currency monitor task #{self.id}.\n\nEnabled: {self.enable}{en}\nBase currency: {self.base}\nQuote currency: {self.quote}\nWaiting price: {arr}{pr}{tred}"
     
     def ToShortStr(self) -> str:
         arr = ">" if self.rofl else "<"
         tred = "📈" if self.rofl else "📉"
         en = '✅' if self.enable==True else '🛑'
         pr = pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
-        return f" {en} ID #{self.id} {self.base}/{self.quote} with limit {arr}{pr}{tred}"
+        return f" {en} [ID #{self.id}] {self.base}/{self.quote}{arr}{pr}{tred}"
 
     def ToShortId(self) -> str:
         return f"#{self.id} {self.base}/{self.quote}"
