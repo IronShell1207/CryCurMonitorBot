@@ -85,7 +85,7 @@ def get_language_keyboard():
 
 def get_main_keyboard(lng):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-    
+
     item1 = KeyboardButton(mainkb.display_tasks(lng))
     item2 = KeyboardButton(mainkb.create_new_task(lng))
     item5 = KeyboardButton(mainkb.settings(lng))
@@ -100,12 +100,12 @@ def get_settings_kb(lng):
     
     item1 = KeyboardButton(settingskb.notify_timeout(lng))
     item2 = KeyboardButton(settingskb.auto_enable_not(lng))
-    item4 = KeyboardButton(settingskb.show_edit_btns(lng))
+    item6 = KeyboardButton(settingskb.show_edit_btns(lng))
     item4 = KeyboardButton(settingskb.auto_disable_task(lng))
     item5 = KeyboardButton(settingskb.language_set(lng))
     item3 = KeyboardButton(settingskb.back_sets_btn(lng))
     
-    markup.add(item1,item2,item4,item5,item3)
+    markup.add(item1,item2,item6,item4,item5,item3)
     return markup
 
 def get_quotes_keyboard(listitems: list):
