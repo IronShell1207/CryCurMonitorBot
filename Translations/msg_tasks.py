@@ -142,7 +142,7 @@ def wrong_pair(lang, base, quote):
     if lang == "rus":
         return f"🚫 Пара {base}/{quote} не найдена!"
     elif lang == "eng":
-        return f"🚫I can't find pair {base}/{quote}. Recheck your writting!"
+        return f"🚫I can't find pair {base}/{quote}!"
 
 def stop_all_tasks(lang):
     if lang == "rus":
@@ -154,7 +154,7 @@ def no_tasks_detected(lang):
     if lang == "rus":
         return "❌ У вас нет ниодного задания для мониторинга!"
     elif lang == "eng":
-        return "❌ You have not added any tasks yet! To add new send /createtask"
+        return "❌ You have not added any tasks yet!"
 
 def start_all_tasks(lang, ix, alon):
     if lang == "rus":
@@ -162,7 +162,8 @@ def start_all_tasks(lang, ix, alon):
         return f"✅Ваши {ix} заданий активированы, и {alreadyon} "
     elif lang == "eng":
         alreadyon = f"and {alon-ix} tasks already ON ✅" if alon-ix>0 else ""
-        return f"✅Your {ix} monitoring tasks are started and {alreadyon} started \nFor check all your tasks send /showtasks"
+        
+        return f"✅Your {ix} monitoring tasks are started and {alreadyon} started"
 
 def editted_task_info(lang):
     if lang == "rus":
@@ -224,11 +225,17 @@ def return_rates_tasks(lang):
     elif lang == "eng":
         return f"📈📉Your currency exchange rates, based on your tasks: \n\n"
 
-def return_monitoring_list(lang, printer):
+def return_monitoring_list(lang, printer, hints):
     if lang == "rus":
-        return f"Ваш список заданий:\n\n{printer}\nЧтобы получить отфильтрованный по базовой валюте список заданий пришли команду следующего вида:\n/show <название валюты>"
+        if not hints:
+            return f"Ваш список заданий:\n\n{printer}\nЧтобы получить отфильтрованный по базовой валюте список заданий пришли команду следующего вида:\n/show <название валюты>"
+        else:
+            return f"Ваш список заданий:\n\n{printer}"
     elif lang == "eng":
-        return f"Your monitoring task list:\n\n{printer}\nTo get filtred list by base send: /show <base currency>"
+        if not hints:
+            return f"Your monitoring task list:\n\n{printer}\nTo get filtred list by base send: /show <base currency>"
+        else:
+            return f"Your monitoring task list:\n\n{printer}"
 
 def info_start(lang):
     if lang == "rus":
@@ -312,12 +319,17 @@ def task_printer_fall(lang, ctask: CT.CryptoTask, newprice):
     elif lang == "eng":
         return f"🔺 {ctask.ToShortId()} price fall 📉 from {ctask.price} to {newprice}!\n" 
 
-def print_loop(lang, printer):
+def print_loop(lang, printer, ishints):
     if lang == "rus":
-        return  f"⚠️ Уведомление о достижении целей по курсам:\n{printer}\nДля редактирования задания отправь:\n/edit <id> <цена>\nДля отключения задания:\n/disable <id>\n*Отключить кнопки быстрого редактирования можно в настройках ⚙️!"
+        if not ishints:
+            return  f"⚠️ Уведомление о достижении целей по курсам:\n{printer}\nДля редактирования задания отправь:\n/edit <id> <цена>\nДля отключения задания:\n/disable <id>\n*Отключить кнопки быстрого редактирования можно в настройках ⚙️!"
+        else:
+            return printer
     elif lang == "eng":
-        return f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>*To disable fast edit buttons go to the settings ⚙️!"
-
+        if not ishints:
+            return f"⚠️ Your updated exchange rates list:\n{printer}\nTo edit task send: /edittask <task id>\nTo disable: /disable <task_id>*To disable fast edit buttons go to the settings ⚙️!"
+        else:
+            return printer
 
 def loop_error_pair(lang, ctask: CT.CryptoTask):
     if lang == "rus":

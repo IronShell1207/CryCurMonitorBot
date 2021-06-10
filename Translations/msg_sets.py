@@ -34,7 +34,7 @@ def once_notify_txt(lang, eod):
         ans = "every time" if eod else "once"
         return f"Now task notifications will be triggered {ans}"
 
-def notify_timer(lang: str ="eng", sec: float = 0):
+def notify_timer(lang, sec: float = 0):
     if lang == "rus":
         return f"📣Задержка между уведомлениями об изменениях курсов установлено на {sec}сек.🕒"
     elif lang == "eng":
@@ -65,3 +65,12 @@ def current_sets(user : CT.UserSets):
 - Delay between notifications: {user.notifytimer}
 
 You can edit settings by the keyboard bellow"""
+
+
+def hide_hints(lng, ishide):
+    if lng == "rus":
+        sll ="скрыты" if ishide else "отображаются"
+        return f"📃Подсказки в сообщениях теперь {sll}"
+    elif lng == "eng":
+        sll = "hidded" if ishide else "displayed"
+        return f"📃Hints are now {sll}!"

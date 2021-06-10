@@ -430,7 +430,7 @@ def showtasks(message):
     for item in usertasks:
         printer += item.ToShortStr()+"\n"
     if len(usertasks)>0:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.return_monitoring_list(retUser(message).language,printer), reply_markup=keyboards.get_en_dis_all_keys(retUser(message).language))
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.return_monitoring_list(retUser(message).language,printer, retUser(message).hidehint), reply_markup=keyboards.get_en_dis_all_keys(retUser(message).language))
     else:
         bot.send_message(chat_id=message.chat.id, 
         text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
@@ -462,46 +462,48 @@ def setstyle(message):
 
 @bot.message_handler(content_types=['text'], func=lambda message: message.text in mainkb.get_main_kb_buttons(retUser(message).language))
 def msg_kb_handler(message):
-    lng = retUser(message).language
-    if message.text == mainkb.display_tasks(lng):
+    if message.text == mainkb.display_tasks("rus") or message.text == mainkb.display_tasks("eng"):
         showtasks(message)
-    elif message.text == mainkb.create_new_task(lng):
+    elif message.text == mainkb.create_new_task("rus") or message.text == mainkb.create_new_task("eng"):
         create_task_h(message)
-    elif message.text == mainkb.start_all_tasks_btn(lng):
+    elif message.text == mainkb.start_all_tasks_btn("rus") or message.text == mainkb.start_all_tasks_btn("eng"):
         startALLtasks(message)
-    elif message.text == mainkb.disable_all_tasks_btn(lng):
+    elif message.text == mainkb.disable_all_tasks_btn("rus") or message.text == mainkb.disable_all_tasks_btn("eng"):
         stoptasks(message)
-    elif message.text == mainkb.settings(lng):
+    elif message.text == mainkb.settings("rus") or message.text == mainkb.settings("eng"):
         user = retUser(message)
         bot.send_message(chat_id=message.chat.id, text=msg_sets.current_sets(retUser(message)), reply_markup=keyboards.get_settings_kb(retUser(message).language))
         return
-    elif message.text == mainkb.display_rates(lng):
+    elif message.text == mainkb.display_rates("rus") or  message.text == mainkb.display_rates("eng"):
         getrates(message)
 
 #клавиатура настроек
 @bot.message_handler(content_types=['text'], func=lambda message: message.text in settingskb.bottom_kb_settings(retUser(message).language))
 def settings_kb_hand(message):
     user = retUser(message)
-    if message.text == settingskb.auto_enable_not("rus") or message.text == settingskb.auto_enable_not():
+    if message.text == settingskb.auto_enable_not("rus") or message.text == settingskb.auto_enable_not("eng"):
         user.autostartcreate = not user.autostartcreate
         CT.write_json_users(USERlist)
         bot.send_message(chat_id=message.chat.id, text=str.format(msg_sets.autoenable_message(user.language),user.autostartcreate),reply_markup=keyboards.get_main_keyboard(user.language))
         #7bot.send_message(chat_id=message.chat.id, text=f"Auto enabling new tasks active status: {user.autostartcreate}", reply_markup=keyboards.get_main_keyboard(retUser(message).language))
-    elif message.text == settingskb.notify_timeout("rus") or message.text == settingskb.notify_timeout():
+    elif message.text == settingskb.notify_timeout("rus") or message.text == settingskb.notify_timeout("eng"):
         echo = bot.send_message(chat_id=message.chat.id, text=msg_sets.notification_delay_set(user.language), reply_markup=keyboards.get_main_keyboard(user.language))
         bot.register_next_step_handler(echo, set_notify_timer)
-    elif message.text == settingskb.back_sets_btn(user.language):
+    elif message.text == settingskb.back_sets_btn("rus"):
         bot.send_message(chat_id=message.chat.id, text=msg_sets.close_setting_menu(user.language), reply_markup=keyboards.get_main_keyboard(user.language))
-    elif message.text == settingskb.show_edit_btns(user.language):
+    elif message.text == settingskb.show_edit_btns("rus") or message.text == settingskb.show_edit_btns("eng"):
         user.fasteditbtns = not user.fasteditbtns
         CT.write_json_users(USERlist)
         bot.send_message(chat_id=message.chat.id, text=msg_sets.fastEditBtns_txt(user.language,user.fasteditbtns), reply_markup=keyboards.get_main_keyboard(user.language))
-    elif message.text == settingskb.auto_disable_task(user.language):
+    elif message.text == settingskb.auto_disable_task("rus") or message.text == settingskb.auto_disable_task("eng") :
         user.notifyonce = not user.notifyonce 
         CT.write_json_users(USERlist)
         bot.send_message(chat_id=message.chat.id, text=msg_sets.once_notify_txt(user.language, user.notifyonce), reply_markup=keyboards.get_main_keyboard(user.language))
-    elif message.text == settingskb.language_set(user.language):
+    elif message.text == settingskb.language_set("rus") or message.text == settingskb.language_set("eng"):
         bot.send_message(chat_id=message.chat.id, text="Please select the language", reply_markup=keyboards.get_language_keyboard())
+    elif message.text == settingskb.hide_hints("rus") or message.text == settingskb.hide_hints("eng"):
+        user.hidehint = not user.hidehint
+        bot.send_message(chat_id=message.chat.id, text=msg_sets.hide_hints(user.language, user.hidehint) ,reply_markup=keyboards.get_main_keyboard(user.language))
     elif message.text == "🇷🇺 Russian":
         retUser(message).language = "rus"
         bot.send_message(chat_id=message.chat.id, text=f"Текущий язык: Русский", reply_markup=keyboards.get_main_keyboard("rus"))
@@ -558,7 +560,7 @@ def new_task_loop():
                         time.sleep(1.5)
                     elif printer!= "":
                         rekb = keyboards.get_fast_edit_kb(user.language,kbfastedititems) if user.fasteditbtns else None
-                        bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer),reply_markup=rekb)
+                        bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer, user.hidehint),reply_markup=rekb)
                         user.lastnotify = datetime.datetime.now()
                         #time.sleep(timer_usr)
                 else:
