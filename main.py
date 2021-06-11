@@ -503,6 +503,7 @@ def settings_kb_hand(message):
         bot.send_message(chat_id=message.chat.id, text="Please select the language", reply_markup=keyboards.get_language_keyboard())
     elif message.text == settingskb.hide_hints("rus") or message.text == settingskb.hide_hints("eng"):
         user.hidehint = not user.hidehint
+        CT.write_json_users(USERlist)
         bot.send_message(chat_id=message.chat.id, text=msg_sets.hide_hints(user.language, user.hidehint) ,reply_markup=keyboards.get_main_keyboard(user.language))
     elif message.text == "🇷🇺 Russian":
         retUser(message).language = "rus"
@@ -554,6 +555,10 @@ def new_task_loop():
                             kbfastedititems.append(task)
                             task.enable = task.enable if user.notifyonce == False else False
                             printer += msg_tasks.task_printer_fall(user.language,task,getprice)
+                        elif task.rofl == None:
+                            bot.send_message(chat_id=user.user_id, text=f"Some error ocured with task {task.ToShortId()}. Task deleted")
+                            TasksList.remove(task)
+                            CT.write_json_tasks(TasksList)
                         else:
                             pass
                     if printer == "":
