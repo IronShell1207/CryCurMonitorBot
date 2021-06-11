@@ -28,10 +28,10 @@ def fastEditBtns_txt(lang, hord):
 
 def once_notify_txt(lang, eod):
     if lang == "rus":
-        ans = "каждый раз" if eod else "один раз"
+        ans = "один раз" if eod else "каждый раз"
         return f"Уведомления о изменениях теперь срабатывают {ans}"
     elif lang == "eng":
-        ans = "every time" if eod else "once"
+        ans = "once" if eod else "every time"
         return f"Now task notifications will be triggered {ans}"
 
 def notify_timer(lang, sec: float = 0):
