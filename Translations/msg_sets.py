@@ -54,6 +54,7 @@ def current_sets(user : CT.UserSets):
 - Кнопки быстрого редактирования заданий при уведомлении о изменении курсов: {user.fasteditbtns}
 - Авто отключение задания после одного уведомления (уведомления приходят всегда после достижении целей при выключенной функции): {user.notifyonce}
 - Задержка между уведомлениями: {user.notifytimer}
+- Скрытие подсказок: {user.hidehint}
 
 Редактирование настроек производится с помощью клавиатуры ниже"""
     elif user.language == "eng":
@@ -63,6 +64,7 @@ def current_sets(user : CT.UserSets):
 - Displaying task fast edit buttons after notify: {user.fasteditbtns}
 - Auto disabling tasks after single trigger (trigger always after cource reaches setted price if disabled): {user.notifyonce} 
 - Delay between notifications: {user.notifytimer}
+- Hidding hints: {user.hidehint}
 
 You can edit settings by the keyboard bellow"""
 
