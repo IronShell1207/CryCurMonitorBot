@@ -37,15 +37,20 @@ def back_sets_btn(lng):
 
 def hide_hints(lng):
     if lng == "rus":
-        return "Скрыть подсказки📃"
+        return "📃Скрыть подсказки"
     elif lng == "eng":
-        return "Hide hints 📃"
+        return "📃Hide hints "
 
+def autorofl(lng):
+    if lng == "rus":
+        return "📊Авто выбор движения цены"
+    elif lng == "eng":
+        return "📊Auto detect raise or fall"
 
 def bottom_kb_settings(lng: str = "eng"):
     return [notify_timeout(lng),auto_enable_not(lng),
             show_edit_btns(lng),auto_disable_task(lng),
-            language_set(lng),hide_hints(lng),
+            language_set(lng),hide_hints(lng),autorofl(lng),
             back_sets_btn(lng),"🇬🇧 English", "🇷🇺 Russian"]
 
 

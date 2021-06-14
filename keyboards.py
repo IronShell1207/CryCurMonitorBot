@@ -104,9 +104,10 @@ def get_settings_kb(lng):
     item4 = KeyboardButton(settingskb.auto_disable_task(lng))
     item5 = KeyboardButton(settingskb.language_set(lng))
     item3 = KeyboardButton(settingskb.back_sets_btn(lng))
+    item7 = KeyboardButton(settingskb.autorofl(lng))
     itemhints = KeyboardButton(settingskb.hide_hints(lng))
     
-    markup.add(item1,item2,item6,item4,item5,itemhints,item3)
+    markup.add(item1,item2,item6,item4,item5,itemhints,item7,item3)
     return markup
 
 def get_quotes_keyboard(listitems: list):

@@ -75,17 +75,21 @@ def create_task_h(message):
                     return
                 user.CTask.price = float(cmb.group(6))
                 if cmb.group(8) == None:
-                    bot.send_message(chat_id=message.chat.id, text = 
-                                     msg_tasks.created_task_without_rofl(user.language, 
-                                                                        user.CTask.base,
-                                                                        user.CTask.quote, 
-                                                                        user.CTask.price), 
-                                            reply_markup=keyboards.get_raise_fall_kb(user.language))
-                    return #f"Pair {retUser(message).CTask.base}/{retUser(message).CTask.quote} with value {retUser(message).CTask.price} created.\nSelect the movement of value of your pair falling or raising"
-                user.CTask.rofl = True if cmb.group(8) == "+" or cmb.group(8) == "Raise" else False
+                    if user.autorofl == True:
+                        user.CTask.rofl = True if user.CTask.price > pr_ch else False
+                    else:
+                        bot.send_message(chat_id=message.chat.id, 
+                                        text = msg_tasks.created_task_without_rofl(user.language, 
+                                                                                    user.CTask.base,
+                                                                                    user.CTask.quote, 
+                                                                                    user.CTask.price), 
+                                        reply_markup=keyboards.get_raise_fall_kb(user.language))
+                        return #f"Pair {retUser(message).CTask.base}/{retUser(message).CTask.quote} with value {retUser(message).CTask.price} created.\nSelect the movement of value of your pair falling or raising"
+                else:
+                    user.CTask.rofl = True if cmb.group(8) == "+" or cmb.group(8) == "Raise" else False
                 TasksList.append(user.CTask)
                 CT.write_json_tasks(TasksList)
-                bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_fully(user.language, user.CTask), reply_markup=keyboards.get_starttask_keys(user.CTask.id))
+                bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_fully(user.language, user.CTask), reply_markup=keyboards.get_starttask_keys(user.language, user.CTask.id))
                 return
             else:
                 bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_error_pair(user.language))
@@ -96,6 +100,10 @@ def create_task_h(message):
     except ValueError as ex :
         bot.send_message(chat_id=message.chat.id, text=f"Error {ex}")
 
+
+def get_auto_rofl(base, quote, price):
+    prc = ExCuWorker.bin_getCur(base,quote)
+    return True if price>prc else False
 
 def crtask_baseset(message):
     revalue = recombos.re_value_name.match(message.text)
@@ -131,8 +139,18 @@ def crtask_quotetask(message):
 #3Й-этап (цена)
 def crtask_priceset(message):
     try:
-        retUser(message).CTask.price = float(str(message.text).replace(',','.'))
-        echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_setted(retUser(message).language, retUser(message).CTask), reply_markup = keyboards.get_raise_fall_kb(retUser(message).language))
+        user = retUser(message)
+        user.CTask.price = float(str(message.text).replace(',','.'))
+        if user.autorofl == True:
+            pricenow = ExCuWorker.bin_getCur(user.CTask.base, user.CTask.quote)
+            user.CTask.rofl = True if pricenow < user.CTask.price else False
+            TasksList.append(retUser(message).CTask)
+            CT.write_json_tasks(TasksList)
+            bot.send_message(chat_id=message.chat.id, 
+            text=msg_tasks.created_task_fully(retUser(message).language, retUser(message).CTask), 
+                    reply_markup=keyboards.get_starttask_keys(retUser(message).language, retUser(message).CTask.id))
+        else:
+            echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_setted(retUser(message).language, retUser(message).CTask), reply_markup = keyboards.get_raise_fall_kb(retUser(message).language))
     except (ValueError):
         echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_error(retUser(message).language), reply_markup = keyboards.get_startup_keys(retUser(message).language))
 
@@ -489,7 +507,7 @@ def settings_kb_hand(message):
     elif message.text == settingskb.notify_timeout("rus") or message.text == settingskb.notify_timeout("eng"):
         echo = bot.send_message(chat_id=message.chat.id, text=msg_sets.notification_delay_set(user.language), reply_markup=keyboards.get_main_keyboard(user.language))
         bot.register_next_step_handler(echo, set_notify_timer)
-    elif message.text == settingskb.back_sets_btn("rus"):
+    elif message.text == settingskb.back_sets_btn("rus") or message.text == settingskb.back_sets_btn("eng"):
         bot.send_message(chat_id=message.chat.id, text=msg_sets.close_setting_menu(user.language), reply_markup=keyboards.get_main_keyboard(user.language))
     elif message.text == settingskb.show_edit_btns("rus") or message.text == settingskb.show_edit_btns("eng"):
         user.fasteditbtns = not user.fasteditbtns
@@ -505,6 +523,9 @@ def settings_kb_hand(message):
         user.hidehint = not user.hidehint
         CT.write_json_users(USERlist)
         bot.send_message(chat_id=message.chat.id, text=msg_sets.hide_hints(user.language, user.hidehint) ,reply_markup=keyboards.get_main_keyboard(user.language))
+    elif message.text == settingskb.autorofl("rus") or message.text == settingskb.autorofl("eng"):
+        user.autorofl = not user.autorofl
+        bot.send_message(chat_id=message.chat.id, text=f"{msg_sets.autorofl(user.language, user.autorofl)}", reply_markup=keyboards.get_main_keyboard(user.language))
     elif message.text == "🇷🇺 Russian":
         retUser(message).language = "rus"
         bot.send_message(chat_id=message.chat.id, text=f"Текущий язык: Русский", reply_markup=keyboards.get_main_keyboard("rus"))

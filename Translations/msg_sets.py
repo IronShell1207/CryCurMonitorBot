@@ -55,6 +55,7 @@ def current_sets(user : CT.UserSets):
 - Авто отключение задания после одного уведомления (уведомления приходят всегда после достижении целей при выключенной функции): {user.notifyonce}
 - Задержка между уведомлениями: {user.notifytimer}
 - Скрытие подсказок: {user.hidehint}
+- Автоматическое определение движение цены при создании задания {user.autorofl}
 
 Редактирование настроек производится с помощью клавиатуры ниже"""
     elif user.language == "eng":
@@ -65,6 +66,7 @@ def current_sets(user : CT.UserSets):
 - Auto disabling tasks after single trigger (trigger always after cource reaches setted price if disabled): {user.notifyonce} 
 - Delay between notifications: {user.notifytimer}
 - Hidding hints: {user.hidehint}
+- Automatic determination of the direction of price movement {user.autorofl}
 
 You can edit settings by the keyboard bellow"""
 
@@ -76,3 +78,9 @@ def hide_hints(lng, ishide):
     elif lng == "eng":
         sll = "hidded" if ishide else "displayed"
         return f"📃Hints are now {sll}!"
+    
+def autorofl(lng,rofl):
+    if lng == "rus":
+        return f"Авто определение роста или падения цены в зависимости от установленной цели при создании задачи: {'активировано ✅' if rofl else 'отключено ❌'}"
+    elif lng == "eng":
+        return f"Automatic detection of the rise or fall of the price depending on the set goal when creating a task: {'enabled ✅' if rofl else 'disabled ❌'}"
