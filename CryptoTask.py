@@ -139,7 +139,7 @@ class UserSets(object):
                  notifytimer: int = 90,
                  language: str = "eng",
                  notifystyle: bool = False, 
-                 autostartcreate: bool = False, 
+                 autostartcreate: bool = True, 
                  lastnotify: datetime = datetime.now()-timedelta(minutes=2),
                  fasteditbtns: bool = True,
                  notifyonce: bool = False,
