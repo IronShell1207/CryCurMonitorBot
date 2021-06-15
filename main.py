@@ -457,10 +457,15 @@ def showtasks(message):
 def start(message):
     usr_ex = [x for x in USERlist if message.chat.id == x.user_id]
     reply_kb = keyboards.get_language_keyboard() if len(usr_ex)==0 or usr_ex == None else keyboards.get_main_keyboard(retUser(message).language)
-    new_user = "\n\nFirst of all select your language!" if len(usr_ex)==0 or usr_ex == None else ""
-    echo = bot.send_message(chat_id=message.chat.id, 
-    text=f"{msg_tasks.info_start(retUser(message).language)}{new_user}",
+    new_user = True if len(usr_ex)==0 or usr_ex == None else False
+    if not new_user:
+        echo = bot.send_message(chat_id=message.chat.id, 
+    text=f"{msg_tasks.info_start(retUser(message).language)}",
     reply_markup=reply_kb)
+    else:
+        gif = open('mp4.mp4', 'rb')
+        bot.send_animation(chat_id=message.chat.id, animation=gif)
+        bot.send_message(chat_id=message.chat.id, text=f"Hello! Please select your language by clicking on the button below to continue!", reply_markup=keyboards.get_language_keyboard())
 
 @bot.message_handler(commands=['info'])
 def infohelp(message):
@@ -528,11 +533,11 @@ def settings_kb_hand(message):
         bot.send_message(chat_id=message.chat.id, text=f"{msg_sets.autorofl(user.language, user.autorofl)}", reply_markup=keyboards.get_main_keyboard(user.language))
     elif message.text == "🇷🇺 Russian":
         retUser(message).language = "rus"
-        bot.send_message(chat_id=message.chat.id, text=f"Текущий язык: Русский", reply_markup=keyboards.get_main_keyboard("rus"))
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.info_start("rus"), reply_markup=keyboards.get_main_keyboard("rus"))
         CT.write_json_users(USERlist)
     elif message.text == "🇬🇧 English":
         retUser(message).language = "eng"
-        bot.send_message(chat_id=message.chat.id, text=f"Current language is: English", reply_markup=keyboards.get_main_keyboard("eng"))
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.info_start("eng"), reply_markup=keyboards.get_main_keyboard("eng"))
         CT.write_json_users(USERlist)
 
 
