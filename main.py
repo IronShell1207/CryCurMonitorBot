@@ -541,7 +541,7 @@ def settings_kb_hand(message):
 @bot.message_handler(commands=['help'])
 def help(message):
     echo = bot.send_message(chat_id=message.chat.id,
-                            text=msg_sets.commands_list(retUser(message).language))
+                            text=msg_tasks.commands_list(retUser(message).language))
     
 
 
