@@ -87,9 +87,7 @@ def create_task_h(message):
                         return #f"Pair {retUser(message).CTask.base}/{retUser(message).CTask.quote} with value {retUser(message).CTask.price} created.\nSelect the movement of value of your pair falling or raising"
                 else:
                     user.CTask.rofl = True if cmb.group(8) == "+" or cmb.group(8) == "Raise" else False
-                TasksList.append(user.CTask)
-                CT.write_json_tasks(TasksList)
-                bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_fully(user.language, user.CTask), reply_markup=keyboards.get_starttask_keys(user.language, user.CTask.id))
+                task_user_add(message)
                 return
             else:
                 bot.send_message(chat_id=message.chat.id, text = msg_tasks.created_task_error_pair(user.language))
@@ -130,6 +128,18 @@ def crtask_baseset(message):
     else:
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
 
+
+# Добавление задания!
+def task_user_add(message):
+    user = retUser(message)
+    user.CTask.enable = user.autostartcreate
+    TasksList.append(user.CTask)
+    CT.write_json_tasks(TasksList)
+    bot.send_message(chat_id=message.chat.id, 
+                    text=msg_tasks.created_task_fully(user.language, user.CTask), 
+                    reply_markup=keyboards.get_starttask_keys(user.language, user.CTask.id))
+    pass
+
 """
 #2-й этап   не юзается  
 def crtask_quotetask(message):
@@ -155,11 +165,7 @@ def crtask_priceset(message):
         if user.autorofl == True:
             pricenow = ExCuWorker.bin_getCur(user.CTask.base, user.CTask.quote)
             user.CTask.rofl = True if pricenow < user.CTask.price else False
-            TasksList.append(retUser(message).CTask)
-            CT.write_json_tasks(TasksList)
-            bot.send_message(chat_id=message.chat.id, 
-            text=msg_tasks.created_task_fully(retUser(message).language, retUser(message).CTask), 
-                    reply_markup=keyboards.get_starttask_keys(retUser(message).language, retUser(message).CTask.id))
+            task_user_add(message)
         else:
             echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_price_setted(retUser(message).language, retUser(message).CTask), reply_markup = keyboards.get_raise_fall_kb(retUser(message).language))
     except (ValueError):
@@ -175,11 +181,7 @@ def crtask_rofl(message, data):
     if len(varExist)>0 and varExist != None:
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_final_already_have(retUser(message).language,retUser(message).CTask,varExist[0]), reply_markup=keyboards.get_remove_edit_kb(retUser(message).language, varExist[0].id))
         return
-    TasksList.append(retUser(message).CTask)
-    CT.write_json_tasks(TasksList)
-    bot.send_message(chat_id=message.chat.id, 
-    text=msg_tasks.created_task_fully(retUser(message).language, retUser(message).CTask), 
-                    reply_markup=keyboards.get_starttask_keys(retUser(message).language, retUser(message).CTask.id))
+    task_user_add(message)
     
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
