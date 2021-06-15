@@ -106,8 +106,8 @@ def get_auto_rofl(base, quote, price):
     return True if price>prc else False
 
 def crtask_baseset(message):
-    revalue = recombos.re_value_name.match(message.text)
-    rev = recombos.pair_re.match(message.text)
+    revalue = recombos.re_value_name.match(message.text.upper())
+    rev = recombos.pair_re.match(message.text.upper())
     if revalue != None and rev == None:
         retUser(message).CTask.base = message.text.upper()
         quotes_stack = ExCuWorker.bin_get_pair_quotes(retUser(message).CTask.base)
