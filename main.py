@@ -107,15 +107,26 @@ def get_auto_rofl(base, quote, price):
 
 def crtask_baseset(message):
     revalue = recombos.re_value_name.match(message.text)
-    if revalue != None:
+    rev = recombos.pair_re.match(message.text)
+    if revalue != None and rev == None:
         retUser(message).CTask.base = message.text.upper()
         quotes_stack = ExCuWorker.bin_get_pair_quotes(retUser(message).CTask.base)
         if len(quotes_stack)>0:
             bot.send_message(chat_id=message.chat.id, 
                              text=msg_tasks.creation_base_setted(retUser(message).language, retUser(message).CTask.base), 
                              reply_markup=keyboards.get_quotes_keyboard(quotes_stack))
+            return 
         else:
             bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
+            return
+    
+    if rev != None:
+        retUser(message).CTask.base = rev.group(1)
+        retUser(message).CTask.quote = rev.group(2)
+        echo = bot.send_message(chat_id=message.chat.id, 
+                             text=msg_tasks.created_task_without_price(retUser(message).language, retUser(message).CTask.base, retUser(message).CTask.quote))
+        bot.register_next_step_handler(message=echo, callback=crtask_priceset)
+        return
     else:
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
 

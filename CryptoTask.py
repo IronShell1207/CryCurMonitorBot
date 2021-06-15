@@ -144,7 +144,7 @@ class UserSets(object):
                  fasteditbtns: bool = True,
                  notifyonce: bool = False,
                  hidehint: bool = False,
-                 autorofl: bool = False):
+                 autorofl: bool = True):
         self.user_id=user_id
         self.notifytimer = notifytimer
         self.notifystyle = notifystyle
