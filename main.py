@@ -53,6 +53,7 @@ def retUser(message):
     return user
 
 
+
 @bot.message_handler(content_types=["audio", "animation","document", "photo", "sticker", "video", "video_note","none", "voice", "location", "contact", "new_chat_members", "left_chat_member", "new_chat_title", "new_chat_photo", 'delete_chat_photo', 'group_chat_created', 'supergroup_chat_created', 'channel_chat_created', 'migrate_to_chat_id', 'migrate_from_chat_id', 'pinned_message'], func = lambda message: message != None)
 def handshit(message):
     bot.send_message(chat_id=message.chat.id, text=msg.mg_dont_accept_err(retUser(message).language))
@@ -601,8 +602,13 @@ def new_task_loop():
                     if printer == "":
                         time.sleep(1.5)
                     elif printer!= "":
+                        try:
+                            bot.delete_message(user.user_id, user.lastnotitymessage)
+                        except Exception as dsd:
+                            print(dsd)
                         rekb = keyboards.get_fast_edit_kb(user.language,kbfastedititems) if user.fasteditbtns else None
-                        bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer, user.hidehint),reply_markup=rekb)
+                        echo = bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer, user.hidehint),reply_markup=rekb)
+                        user.lastnotitymessage = echo.message_id
                         user.lastnotify = datetime.datetime.now()
                         #time.sleep(timer_usr)
                 else:

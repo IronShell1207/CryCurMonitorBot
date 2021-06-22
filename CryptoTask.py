@@ -139,12 +139,14 @@ class UserSets(object):
                  notifytimer: int = 90,
                  language: str = "eng",
                  notifystyle: bool = False, 
+                 lastnotitymessage: int = 0,
                  autostartcreate: bool = False, 
                  lastnotify: datetime = datetime.now()-timedelta(minutes=2),
                  fasteditbtns: bool = True,
                  notifyonce: bool = False,
                  hidehint: bool = False,
-                 autorofl: bool = True):
+                 autorofl: bool = True,
+                 antiflood: bool = False):
         self.user_id=user_id
         self.notifytimer = notifytimer
         self.notifystyle = notifystyle
@@ -155,3 +157,6 @@ class UserSets(object):
         self.language = language
         self.hidehint = hidehint
         self.autorofl = autorofl
+        self.lastnotitymessage = lastnotitymessage
+        self.antiflood = antiflood
+        
