@@ -239,9 +239,18 @@ def return_monitoring_list(lang, printer, hints):
 
 def info_start(lang):
     if lang == "rus":
-        return "Привет! Я бот для мониторинга курсов криптовалют. Добавь задания и я отправлю тебе уведомление о увеличении📉 или уменьшении цены📈 до того значения, которое ты выставишь💰.\nПример использования бота\n📋Список доступных команд ты можешь получить командой: /help\nИнформацию о данном боте🔎: /info"
+        return """Привет! Я бот для мониторинга курсов криптовалют. Добавь задания и я отправлю тебе уведомление о увеличении📉 или уменьшении цены📈 до того значения, которое ты выставишь💰.
+К примеру тебе нужно знать, когда биткоин возьмет отметку в $40.000. Для этого нажимаешь кнопку 'Создать 📊' и присылаешь боту либо название монеты 'BTC' и выбираешь пару среди предложенных вариантов, либо присылаешь сразу пару 'BTC/USDT' в таком формате.
+После этого бот попросит тебя указать ценовую отметку, о достижении которой ты хочешь знать. Присылаешь боту число, к примеру 40000. После этого бот пришлет тебе информацию о только что созданном задании. Все задания ты можешь посмотреть нажав на кнопку 'Список заданий 📝'.
+Как только цена данной пары достигнет намеченной отметки ты сразу получишь от бота уведомление по каждой из добавленных пар. Также ты можешь в любое время отредактировать, выключить или отключить задание. 
+📋Список доступных команд ты можешь получить командой: /help\nИнформацию о данном боте🔎: /info.
+По всем вопросам пишите мне на @idalcm1ls"""
     elif lang == "eng":
-        return "Hello! I'm crypto currency exchange monitor bot. I can send you 💬 notification when your currency is raise 📉 or fall 📈 to setted value 💰. \nFor create new task 🖍 send: /createtask.\nFor get info 📋 send: /info\nFor get all available commands 🔎 send: /help"
+        return """Hello! I'm crypto currency exchange monitor bot. I can send you 💬 notification when your currency is raise 📉 or fall 📈 to setted value 💰.
+For example, you need to know when Bitcoin hits the $ 40,000 mark. To do this, press the 'Create 📊' button and send the bot either the name of the 'BTC' coin and select a pair from the options offered, or send the 'BTC/USDT' pair at once in this format.
+After that, the bot will ask you to indicate the price point that you want to know about. You send the bot a number, for example 40000. After that, the bot will send you information about the newly created task. You can view all tasks by clicking on the 'List of tasks 📝' button.
+As soon as the price of this pair reaches the target mark, you will immediately receive a notification from the bot for each of the added pairs. You can also edit, turn off or turn off the task at any time.  
+For create new task 🖍 send: /createtask.\nFor get info 📋 send: /info\nFor get all available commands 🔎 send: /help"""
 
 def info_bot(lang):
     if lang == "rus":

@@ -139,8 +139,12 @@ class UserSets(object):
                  notifytimer: int = 90,
                  language: str = "eng",
                  notifystyle: bool = False, 
+<<<<<<< HEAD
                  lastnotitymessage: int = 0,
                  autostartcreate: bool = False, 
+=======
+                 autostartcreate: bool = True, 
+>>>>>>> fd2dcbe7c5d4440f9895227c7e74ee1a58ef29f1
                  lastnotify: datetime = datetime.now()-timedelta(minutes=2),
                  fasteditbtns: bool = True,
                  notifyonce: bool = False,
