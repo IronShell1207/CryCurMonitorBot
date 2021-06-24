@@ -620,6 +620,7 @@ def new_task_loop():
                             print(dsd)
                         rekb = keyboards.get_fast_edit_kb(user.language,kbfastedititems) if user.fasteditbtns else None
                         echo = bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer, user.hidehint),reply_markup=rekb)
+                        print(f"User {user.user_id} get {len(usertasks)} updates")
                         user.lastnotitymessage = echo.message_id
                         user.lastnotify = datetime.datetime.now()
                         #time.sleep(timer_usr)
