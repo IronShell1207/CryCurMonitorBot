@@ -7,10 +7,12 @@ create_univers = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{
 #                                       1                       2       3       4       5  6      7    8
 edit_re = re.compile("/(edittask|edit|change)\s*(\d+|)(\s([0-9.]+)|)")
                 #           1                       2   3  4
+edit_re_pair = re.compile("/(edittask|edit|change)\s*(\w{2,5})")
 pair_re = re.compile(r'(\w{2,5})/(\w{2,5})')
 ckpr_pair_re = re.compile(r'/price\s(\w{2,5})/(\w{2,5})')
 
 edit_task_re = re.compile("t/newv(\d+)")
+
 
 re_value_name = re.compile("([A-Z,a-z]{2,5})")
 

@@ -132,6 +132,12 @@ def show_by_task_name_err(lang):
     elif lang == "eng":
         return "❌You have no any tasks with such base currency - "
 
+def for_edit_select_one(lang):
+    if lang == "rus":
+        return "Для редактирования задания выбери нужное ниже"
+    elif lang == "eng":
+        return "For editting tasks select one from list below"
+
 def current_price_pair(lang):
     if lang == "rus":
         return "💸Текущий курс обмена пары "

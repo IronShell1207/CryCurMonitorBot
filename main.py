@@ -64,10 +64,11 @@ def create_task_h(message):
     try: 
         cmb = recombos.create_univers.match(message.text)
         user.CTask = CT.CryptoTask(user_id=message.chat.id)
+        user.CTask.enable = user.autostartcreate
         if cmb != None:
             user.CTask.base = cmb.group(2).upper()
             user.CTask.quote = cmb.group(4).upper()
-            user.CTask.enable = user.autostartcreate
+            
             pr_ch = ExCuWorker.bin_getCur(user.CTask.base, user.CTask.quote)
             if pr_ch != None:
                 if cmb.group(6) == None:
@@ -111,10 +112,10 @@ def crtask_baseset(message):
     rev = recombos.pair_re.match(message.text)
     if revalue != None and rev == None:
         retUser(message).CTask.base = message.text.upper()
-        quotes_stack = ExCuWorker.bin_get_pair_quotes(retUser(message).CTask.base)
+        quotes_stack = ExCuWorker.bin_get_pair_quotes(retUser(message).CTask.base).upper()
         if len(quotes_stack)>0:
             bot.send_message(chat_id=message.chat.id, 
-                             text=msg_tasks.creation_base_setted(retUser(message).language, retUser(message).CTask.base), 
+                             text=msg_tasks.creation_base_setted(retUser(message).language, retUser(message).CTask.base).upper(), 
                              reply_markup=keyboards.get_quotes_keyboard(quotes_stack))
             return 
         else:
@@ -122,8 +123,8 @@ def crtask_baseset(message):
             return
     
     if rev != None:
-        retUser(message).CTask.base = rev.group(1)
-        retUser(message).CTask.quote = rev.group(2)
+        retUser(message).CTask.base = rev.group(1).upper()
+        retUser(message).CTask.quote = rev.group(2).upper()
         echo = bot.send_message(chat_id=message.chat.id, 
                              text=msg_tasks.created_task_without_price(retUser(message).language, retUser(message).CTask.base, retUser(message).CTask.quote))
         bot.register_next_step_handler(message=echo, callback=crtask_priceset)
@@ -192,19 +193,29 @@ def crtask_rofl(message, data):
 def edittask_handler(message):
     try:  
         match = recombos.edit_re.match(message.text)
+        userlang = retUser(message).language
+        if recombos.edit_re_pair.match(message.text) != None:
+            matchs = recombos.edit_re_pair.match(message.text).group(2).upper()
+            usertasks = [x for x in TasksList if message.chat.id == x.user_id and matchs == x.base]
+            if len(usertasks)>0:
+                bot.send_message(chat_id=message.chat.id, text=f"{msg_tasks.show_by_task_name(userlang)}{matchs}\n{msg_tasks.for_edit_select_one(userlang)}", reply_markup=keyboards.get_fast_edit_kb(userlang,usertasks))
+                return
+            else:
+                bot.send_message(chat_id=message.chat.id, text=f"{msg_tasks.show_by_task_name_err(userlang)} {matchs}", reply_markup=keyboards.get_create_only(userlang))
+                return
         id = match.group(2)
         item = [x for x in TasksList if x.user_id == message.chat.id and x.id == int(id)][0]
         price = match.group(4)
         if price != None:
             item.enable = retUser(message).autostartcreate
             item.price = float(price)
-            bot.send_message(chat_id=message.chat.id, text=msg_tasks.edited_task_info(retUser(message).language, item))
+            bot.send_message(chat_id=message.chat.id, text=msg_tasks.edited_task_info(userlang, item))
         else:
             item.enable = False
             retUser(message).CTask = item
-            bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task(retUser(message).language,item), reply_markup=keyboards.get_edit_price_keyboard(retUser(message).language,item.id,item.rofl,item.enable))
+            bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task(userlang,item), reply_markup=keyboards.get_edit_price_keyboard(userlang,item.id,item.rofl,item.enable))
     except Exception as ex:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task_error(retUser(message).language), reply_markup=keyboards.get_startup_keys(retUser(message).language))
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task_error(userlang), reply_markup=keyboards.get_startup_keys(userlang))
         
 
 @bot.message_handler(content_types=['text'], func= lambda message: commandsRE.match(message.text) != None)
@@ -285,6 +296,7 @@ def stoptasks(message):
         CT.write_json_tasks(TasksList)
     else: 
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.no_tasks_detected(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
+
 
 
 
