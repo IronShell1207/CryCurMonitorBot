@@ -106,6 +106,7 @@ def get_settings_kb(lng):
     item3 = KeyboardButton(settingskb.back_sets_btn(lng))
     item7 = KeyboardButton(settingskb.autorofl(lng))
     itemhints = KeyboardButton(settingskb.hide_hints(lng))
+    itemantiflood = KeyboardButton(settingskb.antiflood(lng))
     
     markup.add(item1,item2,item6,item4,item5,itemhints,item7,item3)
     return markup

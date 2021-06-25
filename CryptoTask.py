@@ -69,7 +69,8 @@ class UserEncoder(json.JSONEncoder):
                     'notifyonce' : User.notifyonce,
                     'language' : User.language,
                     'hidehint': User.hidehint,
-                    'autorofl': User.autorofl}    
+                    'autorofl': User.autorofl,
+                    'antiflood': User.antiflood}    
         else:
             super().default(self, User)
 
@@ -116,7 +117,8 @@ def get_json_user_list():
                           notifyonce = usr['notifyonce'],
                           language = usr['language'],
                           hidehint = usr['hidehint'],
-                          autorofl = usr['autorofl'])  
+                          autorofl = usr['autorofl'],
+                          antiflood = usr['antiflood'])  
             userList.append(uz)
         return userList
     return userList
@@ -146,7 +148,8 @@ class UserSets(object):
                  notifyonce: bool = False,
                  hidehint: bool = False,
                  autorofl: bool = True,
-                 antiflood: bool = False):
+                 antiflood: bool = False,
+                 afl_multi: float = 1):
         self.user_id=user_id
         self.notifytimer = notifytimer
         self.notifystyle = notifystyle
@@ -159,4 +162,5 @@ class UserSets(object):
         self.autorofl = autorofl
         self.lastnotitymessage = lastnotitymessage
         self.antiflood = antiflood
+        self.afl_multi = afl_multi
         

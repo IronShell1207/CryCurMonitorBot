@@ -35,6 +35,12 @@ def back_sets_btn(lng):
     elif lng == "eng":
         return "◀️ Back"
 
+def antiflood(lng):
+    if lng == "rus":
+        return "🧯 Антифлуд"
+    elif lng == "eng":
+        return "🧯 Antiflood"
+
 def hide_hints(lng):
     if lng == "rus":
         return "📃Скрыть подсказки"

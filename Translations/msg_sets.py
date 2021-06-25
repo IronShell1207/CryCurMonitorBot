@@ -45,28 +45,43 @@ def wrong_value(lang):
         return "❌Неправильно указано значение!"
     elif lang == "eng":
         return "❌Wrong value!"
+    
+def antiflood(lang, en):
+    if lang == "rus":
+        return f"Флуд уведомлениями об изменении курсов теперь {'включен' if en else 'отключен'}. При активированной настройке при каждом новом уведомлении мультипликатор задержки будет увеличиваться на 0.1 и сбрасываться при отсутсивии уведомлений."
+    elif lang == "eng":
+        return f"{'Notification delay is now increases after next notification by 0.1 for to avoid flooding with notifications (cleared when there are no notifications)' if en else 'Notification delay is now normal'}"
+
+
+def isactive(lang, bl):
+    if lang == "rus":
+        return f"{'Активно ✅' if bl else 'Откл. ⛔️'}"
+    elif lang == "eng":
+        return f"{'Active ✅' if bl else 'Disabled ⛔️'}"
 
 def current_sets(user : CT.UserSets):
     if user.language == "rus":
         return f"""🛠Текущие настройки пользователя {user.user_id}:
 - Язык: {user.language}
-- Автозапуск новых заданий: {user.autostartcreate}
-- Кнопки быстрого редактирования заданий при уведомлении о изменении курсов: {user.fasteditbtns}
-- Авто отключение задания после одного уведомления (уведомления приходят всегда после достижении целей при выключенной функции): {user.notifyonce}
+- Автозапуск новых заданий:  {isactive(user.language,user.autostartcreate)}
+- Кнопки быстрого редактирования заданий при уведомлении о изменении курсов: {isactive(user.language,user.fasteditbtns)}
+- Авто отключение задания после одного уведомления (уведомления приходят всегда после достижении целей при выключенной функции): {isactive(user.language,user.notifyonce)}
 - Задержка между уведомлениями: {user.notifytimer}
-- Скрытие подсказок: {user.hidehint}
-- Автоматическое определение движение цены при создании задания {user.autorofl}
+- Скрытие подсказок: {isactive(user.language,user.hidehint)}
+- Автоматическое определение движение цены при создании задания:{isactive(user.language,user.autorofl)}
+- Автоматическое предотвращение флуда сообщениями об изменениях курсов: {isactive(user.language,user.antiflood)}
 
 Редактирование настроек производится с помощью клавиатуры ниже"""
     elif user.language == "eng":
         return f"""🛠Current settings of user {user.user_id}:
 - Language: {user.language}
-- Auto starting new tasks: {user.autostartcreate}
-- Displaying task fast edit buttons after notify: {user.fasteditbtns}
-- Auto disabling tasks after single trigger (trigger always after cource reaches setted price if disabled): {user.notifyonce} 
+- Auto starting new tasks: {isactive(user.language,user.autostartcreate)}
+- Displaying task fast edit buttons after notify: {isactive(user.language,user.fasteditbtns)}
+- Auto disabling tasks after single trigger (trigger always after cource reaches setted price if disabled): {isactive(user.language,user.notifyonce)}
 - Delay between notifications: {user.notifytimer}
-- Hidding hints: {user.hidehint}
-- Automatic determination of the direction of price movement {user.autorofl}
+- Hidding hints: {isactive(user.language,user.hidehint)}
+- Automatic determination of the direction of price movement: {isactive(user.language,user.autorofl)}
+- Notifications antiflood:  {isactive(user.language,user.antiflood)} 
 
 You can edit settings by the keyboard bellow"""
 

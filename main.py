@@ -556,13 +556,16 @@ def settings_kb_hand(message):
         user.autorofl = not user.autorofl
         bot.send_message(chat_id=message.chat.id, text=f"{msg_sets.autorofl(user.language, user.autorofl)}", reply_markup=keyboards.get_main_keyboard(user.language))
     elif message.text == "🇷🇺 Russian":
-        retUser(message).language = "rus"
+        user.language = "rus"
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.info_start("rus"), reply_markup=keyboards.get_main_keyboard("rus"))
         CT.write_json_users(USERlist)
     elif message.text == "🇬🇧 English":
-        retUser(message).language = "eng"
+        user.language = "eng"
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.info_start("eng"), reply_markup=keyboards.get_main_keyboard("eng"))
         CT.write_json_users(USERlist)
+    elif message.text == settingskb.antiflood("rus") or message.text == settingskb.antiflood("eng"):
+        user.antiflood = not user.antiflood
+        bot.send_message(chat_id=message.chat.id, text=msg_sets.antiflood(user.language, user.antiflood), reply_markup=keyboards.get_main_keyboard(user.language))
 
 
     
@@ -584,7 +587,7 @@ def new_task_loop():
             getcources = ExCuWorker.bin_get_monitor()
             for user in USERlist:
                 #print(f"{user.user_id} updating noficications")
-                timer_usr = user.notifytimer
+                timer_usr = user.notifytimer*user.afl_multi
                 datnow = datetime.datetime.now()
                 if user.lastnotify<=datnow-datetime.timedelta(seconds=timer_usr):
                     printer = ""
@@ -610,6 +613,7 @@ def new_task_loop():
                             TasksList.remove(task)
                             CT.write_json_tasks(TasksList)
                         else:
+                            user.afl_multi = 1
                             pass
                     if printer == "":
                         time.sleep(1.5)
@@ -618,6 +622,8 @@ def new_task_loop():
                             bot.delete_message(user.user_id, user.lastnotitymessage)
                         except Exception as dsd:
                             print(dsd)
+                        if user.antiflood == True:
+                            user.afl_multi = user.afl_multi + 0.2
                         rekb = keyboards.get_fast_edit_kb(user.language,kbfastedititems) if user.fasteditbtns else None
                         echo = bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer, user.hidehint),reply_markup=rekb)
                         print(f"User {user.user_id} get {len(usertasks)} updates")
