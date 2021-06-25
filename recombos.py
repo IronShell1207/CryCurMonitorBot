@@ -1,22 +1,22 @@
 import re
 
-create_re_full = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{2,4})\s+(\S+)\s+(\+|\-)")
-create_re_price = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{2,4})\s+(\S+)")
-create_re_pair = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{2,4})")
-create_univers = re.compile("/(create|createtask|newtask)\s+(\w{2,5})(\s+|/)(\w{2,4})(\s+(\S+)|)(\s+(\+|\-)|)")
+create_re_full = re.compile("/(create|createtask|newtask)\s+([a-zA-Z]{2,5})(\s+|/)([a-zA-Z]{2,4})\s+(\S+)\s+(\+|\-)")
+create_re_price = re.compile("/(create|createtask|newtask)\s+([a-zA-Z]{2,5})(\s+|/)([a-zA-Z]{2,4})\s+(\S+)")
+create_re_pair = re.compile("/(create|createtask|newtask)\s+([a-zA-Z]{2,5})(\s+|/)([a-zA-Z]{2,4})")
+create_univers = re.compile("/(create|createtask|newtask)\s+([a-zA-Z]{2,5})(\s+|/)([a-zA-Z]{2,4})(\s+(\S+)|)(\s+(\+|\-)|)")
 #                                       1                       2       3       4       5  6      7    8
 edit_re = re.compile("/(edittask|edit|change)\s*(\d+|)(\s([0-9.]+)|)")
                 #           1                       2   3  4
-edit_re_pair = re.compile("/(edittask|edit|change)\s*(\w{2,5})")
-pair_re = re.compile(r'(\w{2,5})/(\w{2,5})')
-ckpr_pair_re = re.compile(r'/price\s(\w{2,5})/(\w{2,5})')
+edit_re_pair = re.compile("/(edittask|edit|change)\s*([a-zA-Z]{2,5})")
+pair_re = re.compile(r'([a-zA-Z]{2,5})/([a-zA-Z]{2,5})')
+ckpr_pair_re = re.compile(r'/price\s([a-zA-Z]{2,5})/([a-zA-Z]{2,5})')
 
 edit_task_re = re.compile("t/newv(\d+)")
 
 
 re_value_name = re.compile("([A-Z,a-z]{2,5})")
 
-re_show_tasks = re.compile('/(show|showtasks|display)\s(\w{2,5})')
+re_show_tasks = re.compile('/(show|showtasks|display)\s([a-zA-Z]{2,5})')
 
 task_manupulation_re = re.compile('t/(\w+)/(\d+)')
 re_fast_value_change = re.compile('t/(\w+)(\d+)/(\d+)')
