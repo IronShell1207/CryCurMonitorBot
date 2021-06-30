@@ -122,6 +122,6 @@ def get_quotes_keyboard(listitems: list):
 def get_fast_edit_kb(lng, listitems: list):
     markup =InlineKeyboardMarkup()
     for item in listitems:
-        ikey = InlineKeyboardButton(f"{inlineKB.edit_task(lng)} {item.ToShortId()}", callback_data=f"t/edittask/{item.id}")
+        ikey = InlineKeyboardButton(f"{inlineKB.edit_task(lng)} {item.ToShortStr()} ", callback_data=f"t/edittask/{item.id}")
         markup.add(ikey)
     return markup
