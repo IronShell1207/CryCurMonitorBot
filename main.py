@@ -584,6 +584,8 @@ def new_task_loop():
         print(f"{prdate} - Thread created")
         while(True):
             time.sleep(1)
+            date = datetime.datetime.now()
+            prdate = date.strftime("%Y-%m-%d %H:%M:%S")
             getcources = ExCuWorker.bin_get_monitor()
             for user in USERlist:
                 #print(f"{user.user_id} updating noficications")
@@ -626,7 +628,7 @@ def new_task_loop():
                             user.afl_multi = user.afl_multi + 0.2
                         rekb = keyboards.get_fast_edit_kb(user.language,kbfastedititems) if user.fasteditbtns else None
                         echo = bot.send_message(chat_id=user.user_id, text=msg_tasks.print_loop(user.language,printer, user.hidehint),reply_markup=rekb)
-                        print(f"User {user.user_id} get {len(usertasks)} updates")
+                        print(f"{prdate} User {user.user_id} get {len(usertasks)} updates")
                         user.lastnotitymessage = echo.message_id
                         user.lastnotify = datetime.datetime.now()
                         #time.sleep(timer_usr)
