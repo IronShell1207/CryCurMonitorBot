@@ -25,7 +25,7 @@ def disabletask(lng):
 
 def edit_task(lng):
     if lng == "rus":
-        return "Редактировать ✏️"
+        return "Изм. ✏️"
     elif lng == "eng":
         return "Edit task ✏️"
 
