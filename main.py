@@ -323,6 +323,7 @@ def setnewvalue(message):
         user = retUser(message)
         user.CTask.price = float(message.text)
         user.CTask.enable = user.autostartcreate
+        #TasksList.remove(user.CTask)
         TasksList.append(user.CTask)
         CT.write_json_tasks(TasksList)
         bot.send_message(chat_id=message.chat.id, text=f"{msg_tasks.editted_task_info(user.language)}{retUser(message).CTask.ToString(user.language)}")
@@ -383,9 +384,12 @@ def callback_taskchanger(call):
             CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.pair_monitoring_disabled(retUser(call.message).language,task))
         elif r_task == "edittask":
-            bot.send_message(chat_id=call.message.chat.id, 
+            retUser(call.message).CTask = task
+            TasksList.remove(task)
+            echo = bot.send_message(chat_id=call.message.chat.id, 
                                     text=msg_tasks.task_edit_request(retUser(call.message).language, task), 
                                     reply_markup=keyboards.get_edit_price_keyboard(retUser(call.message).language,task.id,task.rofl,task.enable))
+            bot.register_next_step_handler(echo, callback=setnewvalue)
         elif r_task == "overridetask":
             task.price = retUser(call.message).CTask.price
             CT.write_json_tasks(TasksList)
@@ -396,6 +400,7 @@ def callback_taskchanger(call):
             bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.pair_removed(retUser(call.message).language,task))
             TasksList.remove(task)
             CT.write_json_tasks(TasksList)
+
     except IndexError as exx:
         bot.send_message(chat_id=call.message.chat.id, text=f"{msg_tasks.action_outdated(retUser(call.message).language)} {exx}")
     
@@ -437,16 +442,18 @@ def callback_query(call):
             bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.clear_tasks_list_request(retUser(call.message).language), reply_markup=keyboards.get_remove_cfrm(retUser(call.message).language))
         elif call.data == "viewtasks":
             showtasks(call.message)
+        
     except (ValueError):
         bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.action_outdated(retUser(call.message).language))  
 #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-    
+
 def set_notify_timer(message):
     try:
-        timesecs = float(message.text)
+        match = recombos.task_manupulation_re.match( message.text).group(2)
+        secx =  float(match)
         user = retUser(message)
-        user.notifytimer= timesecs
-        bot.send_message(chat_id=message.chat.id, text=msg_sets.notify_timer(retUser(message).language,timesecs))
+        user.notifytimer= secx
+        bot.send_message(chat_id=message.chat.id, text=msg_sets.notify_timer(retUser(message).language,secx))
         CT.write_json_users(USERlist)
     except (ValueError):
         bot.send_message(chat_id=message.chat.id, text=msg_sets.wrong_value(retUser(message).language))    
@@ -487,8 +494,8 @@ def start(message):
     text=f"{msg_tasks.info_start(retUser(message).language)}",
     reply_markup=reply_kb)
     else:
-        gif = open('mp4.mp4', 'rb')
-        bot.send_animation(chat_id=message.chat.id, animation=gif)
+       # gif = open('mp4.mp4', 'rb')
+       # bot.send_animation(chat_id=message.chat.id, animation=gif)
         bot.send_message(chat_id=message.chat.id, text=f"Hello! Please select your language by clicking on the button below to continue!", reply_markup=keyboards.get_language_keyboard())
 
 @bot.message_handler(commands=['info'])

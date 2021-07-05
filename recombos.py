@@ -25,8 +25,7 @@ create_quote_kb = re.compile("n/(\S+)")
 
 
 
-text = "/create btc usdt"
-
+text = "/create btc usdt" 
 recx = create_univers.match(text)
 re1 = recx.group(1)
 re2 = recx.group(2)
