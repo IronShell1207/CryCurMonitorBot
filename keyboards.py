@@ -107,8 +107,9 @@ def get_settings_kb(lng):
     item7 = KeyboardButton(settingskb.autorofl(lng))
     itemhints = KeyboardButton(settingskb.hide_hints(lng))
     itemantiflood = KeyboardButton(settingskb.antiflood(lng))
+    itemeditbtns = KeyboardButton(settingskb.editbtns(lng))
     
-    markup.add(item1,item2,item6,item4,item5,itemhints,item7,item3)
+    markup.add(item1,item2,item6,item4,item5,itemhints,item7,itemantiflood,itemeditbtns,item3)
     return markup
 
 def get_quotes_keyboard(listitems: list):

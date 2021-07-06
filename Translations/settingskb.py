@@ -40,6 +40,12 @@ def antiflood(lng):
         return "🧯 Антифлуд"
     elif lng == "eng":
         return "🧯 Antiflood"
+    
+def editbtns(lng):
+    if lng == "rus":
+        return "🖍Кнопки изменения задания"
+    elif lng == "eng":
+        return "🖍Task edit btns"
 
 def hide_hints(lng):
     if lng == "rus":
@@ -56,7 +62,7 @@ def autorofl(lng):
 def bottom_kb_settings(lng: str = "eng"):
     return [notify_timeout(lng),auto_enable_not(lng),
             show_edit_btns(lng),auto_disable_task(lng),
-            language_set(lng),hide_hints(lng),autorofl(lng),
+            language_set(lng),hide_hints(lng),autorofl(lng),editbtns(lng),antiflood(lng),
             back_sets_btn(lng),"🇬🇧 English", "🇷🇺 Russian"]
 
 

@@ -213,10 +213,14 @@ def edittask_handler(message):
         else:
             item.enable = False
             retUser(message).CTask = item
-            bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task(userlang,item), reply_markup=keyboards.get_edit_price_keyboard(userlang,item.id,item.rofl,item.enable))
+            isEditBtns = retUser(message).adveditbtns
+            kb = keyboards.get_edit_price_keyboard(userlang,item.id,item.rofl,item.enable) if isEditBtns else None
+            echo = bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task(userlang,item), reply_markup=kb)
+            if not isEditBtns:
+                bot.register_next_step_handler(echo,setnewvalue)
     except Exception as ex:
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.editting_task_error(userlang), reply_markup=keyboards.get_startup_keys(userlang))
-        
+
 
 @bot.message_handler(content_types=['text'], func= lambda message: commandsRE.match(message.text) != None)
 def task_manage_handler(message):
@@ -387,11 +391,11 @@ def callback_taskchanger(call):
             isEditBtns = retUser(call.message).adveditbtns
             retUser(call.message).CTask = task
             retKB = keyboards.get_edit_price_keyboard(retUser(call.message).language,task.id,task.rofl,task.enable) if isEditBtns else None
-            TasksList.remove(task)
             echo = bot.send_message(chat_id=call.message.chat.id, 
                                     text=msg_tasks.task_edit_request(retUser(call.message).language, task), 
                                     reply_markup=retKB)
             if not isEditBtns:
+                TasksList.remove(task)
                 bot.register_next_step_handler(echo, callback=setnewvalue)
         elif r_task == "overridetask":
             task.price = retUser(call.message).CTask.price
@@ -576,6 +580,9 @@ def settings_kb_hand(message):
     elif message.text == settingskb.antiflood("rus") or message.text == settingskb.antiflood("eng"):
         user.antiflood = not user.antiflood
         bot.send_message(chat_id=message.chat.id, text=msg_sets.antiflood(user.language, user.antiflood), reply_markup=keyboards.get_main_keyboard(user.language))
+    elif message.text == settingskb.editbtns("rus") or  message.text == settingskb.editbtns("eng"):
+        user.adveditbtns = not user.adveditbtns
+        bot.send_message(chat_id=user.user_id, text=f"Edit buttons: {user.adveditbtns}", reply_markup=keyboards.get_main_keyboard(user.language))
 
 
     
