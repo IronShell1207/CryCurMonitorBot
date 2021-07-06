@@ -384,12 +384,15 @@ def callback_taskchanger(call):
             CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.pair_monitoring_disabled(retUser(call.message).language,task))
         elif r_task == "edittask":
+            isEditBtns = retUser(call.message).adveditbtns
             retUser(call.message).CTask = task
+            retKB = keyboards.get_edit_price_keyboard(retUser(call.message).language,task.id,task.rofl,task.enable) if isEditBtns else None
             TasksList.remove(task)
             echo = bot.send_message(chat_id=call.message.chat.id, 
                                     text=msg_tasks.task_edit_request(retUser(call.message).language, task), 
-                                    reply_markup=keyboards.get_edit_price_keyboard(retUser(call.message).language,task.id,task.rofl,task.enable))
-            bot.register_next_step_handler(echo, callback=setnewvalue)
+                                    reply_markup=retKB)
+            if not isEditBtns:
+                bot.register_next_step_handler(echo, callback=setnewvalue)
         elif r_task == "overridetask":
             task.price = retUser(call.message).CTask.price
             CT.write_json_tasks(TasksList)

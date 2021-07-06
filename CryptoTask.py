@@ -66,6 +66,7 @@ class UserEncoder(json.JSONEncoder):
                     'notifystyle': User.notifystyle, 
                     'autostartcreate' : User.autostartcreate,
                     'fasteditbtns' : User.fasteditbtns,
+                    'adveditbtns': User.adveditbtns,
                     'notifyonce' : User.notifyonce,
                     'language' : User.language,
                     'hidehint': User.hidehint,
@@ -114,6 +115,7 @@ def get_json_user_list():
                           notifystyle = usr['notifystyle'],
                           autostartcreate = usr['autostartcreate'],
                           fasteditbtns =  usr['fasteditbtns'],
+                          adveditbtns = usr['adveditbtns'],
                           notifyonce = usr['notifyonce'],
                           language = usr['language'],
                           hidehint = usr['hidehint'],
@@ -145,6 +147,7 @@ class UserSets(object):
                  autostartcreate: bool = False, 
                  lastnotify: datetime = datetime.now()-timedelta(minutes=2),
                  fasteditbtns: bool = True,
+                 adveditbtns: bool = True,
                  notifyonce: bool = False,
                  hidehint: bool = False,
                  autorofl: bool = True,
@@ -156,6 +159,7 @@ class UserSets(object):
         self.autostartcreate = autostartcreate
         self.lastnotify = lastnotify
         self.fasteditbtns = fasteditbtns
+        self.adveditbtns = adveditbtns
         self.notifyonce = notifyonce
         self.language = language
         self.hidehint = hidehint
