@@ -37,7 +37,7 @@ def bin_monitor(base, quote, basecurses):
     for item in basecurses:
         if (item['symbol']==base+quote):
             price = float(item['price'])
-            price = price if price>0.0001 else "{:^10.8f}".format(price)
+
             return price
 
 def bin_get_pair_quotes(base):
