@@ -33,11 +33,10 @@ def bin_get_monitor():
     decode_cur = json.loads(datacur)
     return decode_cur
 
-def bin_monitor(base, quote, basecurses):
+def bin_monitor(base, quote, basecurses) -> float:
     for item in basecurses:
         if (item['symbol']==base+quote):
             price = float(item['price'])
-
             return price
 
 def bin_get_pair_quotes(base):

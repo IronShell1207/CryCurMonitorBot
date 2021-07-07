@@ -618,12 +618,12 @@ def new_task_loop():
                             task.enable = False
                             bot.send_message(chat_id=user.user_id, text= msg_tasks.loop_error_pair(user.language))
                             continue
-                        taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
+                       # taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
                         if task.rofl== True and getprice > task.price:
                             kbfastedititems.append(task)
                             task.enable = task.enable if user.notifyonce == False else False
                             printer += msg_tasks.task_printer_raise(user.language,task,getprice)
-                        elif task.rofl == False and getprice < taskprice:
+                        elif task.rofl == False and getprice < task.price:
                             kbfastedititems.append(task)
                             task.enable = task.enable if user.notifyonce == False else False
                             printer += msg_tasks.task_printer_fall(user.language,task,getprice)
