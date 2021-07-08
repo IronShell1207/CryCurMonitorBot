@@ -25,10 +25,17 @@ import CryptoTask as CT
 import keyboards
 import recombos
 
-
+tof =""
+args = sys.argv
+if (len(args)>1):
+    if args[1] =="1":
+        tof = config.TOKEN
+    elif args[1] == "2":
+        tof = config.TOKEN_px
+else:
 #TasksList = []
 #Требуется создать файл config.py и добавить в него строку TOKEN="<ваш токен>"
-tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' else config.TOKEN_px
+    tof = config.TOKEN if input('Choose your destiny: 1 - release, 2 - dev\n')=='1' else config.TOKEN_px
 bot = telebot.TeleBot(token=tof)
 
 commandsRE = re.compile("/(\S+)\s(\d+)")
