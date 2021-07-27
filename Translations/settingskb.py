@@ -63,6 +63,6 @@ def bottom_kb_settings(lng: str = "eng"):
     return [notify_timeout(lng),auto_enable_not(lng),
             show_edit_btns(lng),auto_disable_task(lng),
             language_set(lng),hide_hints(lng),autorofl(lng),editbtns(lng),antiflood(lng),
-            back_sets_btn(lng),"🇬🇧 English", "🇷🇺 Russian"]
+            back_sets_btn(lng),"🌘 NightMode","🇬🇧 English", "🇷🇺 Russian"]
 
 

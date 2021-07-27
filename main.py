@@ -584,6 +584,10 @@ def settings_kb_hand(message):
         user.language = "eng"
         bot.send_message(chat_id=message.chat.id, text=msg_tasks.info_start("eng"), reply_markup=keyboards.get_main_keyboard("eng"))
         CT.write_json_users(USERlist)
+    elif message.text == "🌘 NightMode":
+        user.nightmode = not user.nightmode
+        txt = f"🌘Notifications will be disabled from 23:30 to 6:30!" if user.nightmode else "🌘 Auto Nightmode disabled"
+        bot.send_message(chat_id=message.chat.id, text=f"{txt}")
     elif message.text == settingskb.antiflood("rus") or message.text == settingskb.antiflood("eng"):
         user.antiflood = not user.antiflood
         bot.send_message(chat_id=message.chat.id, text=msg_sets.antiflood(user.language, user.antiflood), reply_markup=keyboards.get_main_keyboard(user.language))
@@ -611,7 +615,15 @@ def new_task_loop():
             date = datetime.datetime.now()
             prdate = date.strftime("%Y-%m-%d %H:%M:%S")
             getcources = ExCuWorker.bin_get_monitor()
+            if len(USERlist)==1:
+                time.sleep(30)
             for user in USERlist:
+                if user.nightmode == True:
+                    nightst = datetime.time(23,30)
+                    nightend = datetime.time(6,30)
+                    dnow = date.time()
+                    if nightend > dnow or dnow > nightend:
+                        continue
                 #print(f"{user.user_id} updating noficications")
                 timer_usr = user.notifytimer*user.afl_multi
                 datnow = datetime.datetime.now()
