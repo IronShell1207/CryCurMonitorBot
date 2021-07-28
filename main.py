@@ -622,7 +622,7 @@ def new_task_loop():
                     nightst = datetime.time(23,30)
                     nightend = datetime.time(6,30)
                     dnow = date.time()
-                    if nightend > dnow or dnow > nightend:
+                    if nightend > dnow or dnow > nightst:
                         continue
                 #print(f"{user.user_id} updating noficications")
                 timer_usr = user.notifytimer*user.afl_multi
