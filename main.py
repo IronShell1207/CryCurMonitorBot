@@ -115,8 +115,8 @@ def get_auto_rofl(base, quote, price):
     return True if price>prc else False
 
 def crtask_baseset(message):
-    revalue = recombos.re_value_name.match(message.text)
-    rev = recombos.pair_re.match(message.text)
+    revalue = recombos.re_value_name.match(message.text.upper())
+    rev = recombos.pair_re.match(message.text.upper())
     if revalue != None and rev == None:
         retUser(message).CTask.base = message.text.upper()
         quotes_stack = ExCuWorker.bin_get_pair_quotes(retUser(message).CTask.base).upper()
@@ -128,7 +128,6 @@ def crtask_baseset(message):
         else:
             bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
             return
-    
     if rev != None:
         retUser(message).CTask.base = rev.group(1).upper()
         retUser(message).CTask.quote = rev.group(2).upper()
