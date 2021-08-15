@@ -51,7 +51,7 @@ def hide_hints(lng):
     if lng == "rus":
         return "📃Скрыть подсказки"
     elif lng == "eng":
-        return "📃Hide hints "
+        return "📃Hide hints"
 
 def autorofl(lng):
     if lng == "rus":

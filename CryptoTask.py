@@ -15,7 +15,9 @@ class CryptoTask(object):
     quote: str = '', 
     price: float = 0.0, 
     rofl: bool = False, 
-    enable: bool = False):
+    enable: bool = False,
+    screenshot: str = None,
+    note: str = None):
         self.id = next(CryptoTask.id_iter)
         self.user_id = user_id
         self.base = base
@@ -23,6 +25,8 @@ class CryptoTask(object):
         self.price = price
         self.rofl = rofl
         self.enable = enable
+        self.screenshot = screenshot
+        self.note = note
         
     def ToString(self, lng) -> str:
         arr = ">" if self.rofl else "<"
@@ -40,6 +44,12 @@ class CryptoTask(object):
         en = '✅' if self.enable==True else '🛑'
         pr = pr = self.price if self.price>0.0001 else "{:^10.8f}".format(self.price)
         return f" {en} [ID #{self.id}] {self.base}/{self.quote}{arr}{pr}{tred}"
+    
+    def ToStrNote(self, newprice) -> str:
+        arr = "raise 📈" if self.rofl else "fall 📉"
+        note = '\n'+ self.note if self.note != None else ""
+        return f"[ID #{self.id}] {self.base}/{self.quote} price {arr} from {self.price} to {newprice} {note}"
+        
 
     def ToShortId(self) -> str:
         return f"#{self.id} {self.base}/{self.quote}"
@@ -53,9 +63,15 @@ class TaskEncoder(json.JSONEncoder):
                     "quote": Task.quote,
                     "price": Task.price,
                     "rofl": Task.rofl,
-                    "enable": Task.enable}
+                    "enable": Task.enable,
+                    "screenshot": Task.screenshot,
+                    "note": Task.note}
         else:
             super().default(self, Task)
+            
+            
+            
+            
             
 
 class UserEncoder(json.JSONEncoder):
@@ -89,7 +105,8 @@ def get_json_task_list():
                              quote=item['quote'],
                              price=item['price'],
                              rofl=item['rofl'],
-                             enable=item['enable'])
+                             enable=item['enable'],
+                             screenshot=item["screenshot"])
             cryptoData.append(dag)
     return cryptoData
     

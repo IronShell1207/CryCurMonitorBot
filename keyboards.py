@@ -26,7 +26,9 @@ def get_edit_price_keyboard(lng,idtask: int, rofl: bool, enable: bool):
     item5 = InlineKeyboardButton(itemROD.format("1"), callback_data = itemROData.format(1))
     item6 = InlineKeyboardButton(inlineKB.newvalue(lng), callback_data=f"t/newv/{str(idtask)}")
     item7 =InlineKeyboardButton(inlineKB.removetask(lng), callback_data=f"t/removetask/{idtask}")
-    markup.add(item5, item4 ,item3,item1,item6, item7)
+    itemimage = InlineKeyboardButton("Set photo", callback_data=f"t/setph/{idtask}")
+    itemtext = InlineKeyboardButton("Set text", callback_data=f"t/settex/{idtask}")
+    markup.add(item5, item4 ,item3,item1,item6, item7, itemimage, itemtext)
     return markup
 
 def get_remove_edit_kb(lng, idtask: int):

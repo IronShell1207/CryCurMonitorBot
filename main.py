@@ -48,7 +48,7 @@ USERlist = CT.get_json_user_list()
 TasksList = CT.get_json_task_list()
 
 
-def retUser(message):
+def retUser(message: telebot.types.Message):
     for user in USERlist:
         if user.user_id == message.chat.id:
             return user
@@ -59,6 +59,47 @@ def retUser(message):
     CT.write_json_users(USERlist)
     return user
 
+
+@bot.message_handler(func= lambda message: recombos.add_pic_re.match(message.text) != None)
+def addc(message: telebot.types.Message):
+    ids = int(recombos.add_pic_re.match(message.text).group(1))
+    item = [x for x in TasksList if x.user_id == message.chat.id and x.id == int(ids)][0]
+    retUser(message).CTask = item
+    ECHO = bot.send_message(chat_id=message.chat.id, text= "Send screenshot")
+    bot.register_next_step_handler(ECHO, get_image_screenshot)
+
+@bot.message_handler(func= lambda message: recombos.send_pic_re.match(message.text)!= None)
+def sendscreen(message):
+    ids = int(recombos.send_pic_re.match(message.text).group(1))
+    item = [x for x in TasksList if x.user_id == message.chat.id and x.id == int(ids)][0]
+    retUser(message).CTask = item
+    bot.send_photo(message.chat.id, photo = open(item.screenshot, 'rb'), caption= item.ToStrNote(219))
+
+def get_image_screenshot(message: telebot.types.Message):
+    if message.content_type == "photo":
+        item = retUser(message).CTask 
+        TasksList.remove(item)
+        gex = message.photo[-1].file_id
+        file = bot.get_file(gex)
+        dpwm = bot.download_file(file.file_path)
+        paths = f"photos/{item.id}.jpg"  
+        with open(paths, 'wb') as new_file:
+            new_file.write(dpwm)
+        item.screenshot = paths
+        TasksList.append(item)
+        CT.write_json_tasks(TasksList)
+        bot.send_message(chat_id = message.chat.id, text = f"Screnshot succesuffuly saved for {item.ToShortStr()}")
+    else:
+        bot.send_message(chat_id=message.chat.id, text="Not photo")
+
+def gettext(message):
+    item = retUser(message).CTask
+    TasksList.remove(item)
+    item.note = message.text
+    TasksList.append(item)
+    CT.write_json_tasks(TasksList)
+    bot.send_message(chat_id = message.chat.id, text='Note for task setted!')
+    
 
 
 @bot.message_handler(content_types=["audio", "animation","document", "photo", "sticker", "video", "video_note","none", "voice", "location", "contact", "new_chat_members", "left_chat_member", "new_chat_title", "new_chat_photo", 'delete_chat_photo', 'group_chat_created', 'supergroup_chat_created', 'channel_chat_created', 'migrate_to_chat_id', 'migrate_from_chat_id', 'pinned_message'], func = lambda message: message != None)
@@ -114,29 +155,30 @@ def get_auto_rofl(base, quote, price):
     prc = ExCuWorker.bin_getCur(base,quote)
     return True if price>prc else False
 
-def crtask_baseset(message):
+def crtask_baseset(message: telebot.types.Message):
+    user = retUser(message)
     revalue = recombos.re_value_name.match(message.text.upper())
     rev = recombos.pair_re.match(message.text.upper())
     if revalue != None and rev == None:
-        retUser(message).CTask.base = message.text.upper()
-        quotes_stack = ExCuWorker.bin_get_pair_quotes(retUser(message).CTask.base).upper()
+        user.CTask.base = message.text.upper()
+        quotes_stack = ExCuWorker.bin_get_pair_quotes(user.CTask.base).upper()
         if len(quotes_stack)>0:
             bot.send_message(chat_id=message.chat.id, 
-                             text=msg_tasks.creation_base_setted(retUser(message).language, retUser(message).CTask.base).upper(), 
+                             text=msg_tasks.creation_base_setted(user.language, user.CTask.base).upper(), 
                              reply_markup=keyboards.get_quotes_keyboard(quotes_stack))
             return 
         else:
-            bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
+            bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(user.language), reply_markup=keyboards.get_create_only(user.language))
             return
     if rev != None:
-        retUser(message).CTask.base = rev.group(1).upper()
-        retUser(message).CTask.quote = rev.group(2).upper()
+        user.CTask.base = rev.group(1).upper()
+        user.CTask.quote = rev.group(3).upper()
         echo = bot.send_message(chat_id=message.chat.id, 
-                             text=msg_tasks.created_task_without_price(retUser(message).language, retUser(message).CTask.base, retUser(message).CTask.quote))
+                             text=msg_tasks.created_task_without_price(user.language, user.CTask.base, user.CTask.quote))
         bot.register_next_step_handler(message=echo, callback=crtask_priceset)
         return
     else:
-        bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(retUser(message).language), reply_markup=keyboards.get_create_only(retUser(message).language))
+        bot.send_message(chat_id=message.chat.id, text=msg_tasks.creation_base_error(user.language), reply_markup=keyboards.get_create_only(user.language))
 
 """
 #2-й этап   не юзается  
@@ -156,7 +198,7 @@ def crtask_quotetask(message):
 """
 
 #3Й-этап (цена)
-def crtask_priceset(message):
+def crtask_priceset(message: telebot.types.Message):
     try:
         user = retUser(message)
         user.CTask.price = float(str(message.text).replace(',','.'))
@@ -196,7 +238,7 @@ def crtask_rofl(message, data):
 
 # edit task
 @bot.message_handler(content_types=['text'],func= lambda message: recombos.edit_re.match(message.text)!= None)
-def edittask_handler(message):
+def edittask_handler(message: telebot.types.Message):
     try:  
         match = recombos.edit_re.match(message.text)
         userlang = retUser(message).language
@@ -229,9 +271,10 @@ def edittask_handler(message):
 
 
 @bot.message_handler(content_types=['text'], func= lambda message: commandsRE.match(message.text) != None)
-def task_manage_handler(message):
+def task_manage_handler(message: telebot.types.Message):
     try:
         match3 = commandsRE.match(message.text)
+        
         taskz = match3.group(1)
         idz = int(match3.group(2))
         if (taskz == "settimer" or taskz == "timer"):
@@ -294,6 +337,8 @@ def pricechecker(message):
     else:
         bot.send_message(chat_id=message.chat.id, text="You send wrong call.\n You must observe pattern!")
     
+
+
 
 
 @bot.message_handler(commands=['stopalltasks','stopall'])
@@ -384,6 +429,14 @@ def callback_taskchanger(call):
             task.enable = True
             CT.write_json_tasks(TasksList)
             bot.send_message(chat_id=call.message.chat.id, text=msg_tasks.pair_monitoring_enabled(retUser(call.message).language,task)) 
+        elif r_task == "setph":
+            retUser(call.message).CTask = task
+            ECHO = bot.send_message(chat_id=call.message.chat.id, text= "Send screenshot")
+            bot.register_next_step_handler(ECHO, get_image_screenshot)
+        elif r_task == "settex":
+            retUser(call.message).CTask = task
+            ECHO = bot.send_message(chat_id=call.message.chat.id, text= "Send text")
+            bot.register_next_step_handler(ECHO, gettext)
         elif r_task == "newv":
             retUser(call.message).CTask = task
             TasksList.remove(task)
@@ -462,8 +515,8 @@ def callback_query(call):
 
 def set_notify_timer(message):
     try:
-        match = recombos.task_manupulation_re.match( message.text).group(2)
-        secx =  float(match)
+        #match = recombos.task_manupulation_re.match( message.text).group(2)
+        secx =  float(message.text)
         user = retUser(message)
         user.notifytimer= secx
         bot.send_message(chat_id=message.chat.id, text=msg_sets.notify_timer(retUser(message).language,secx))
@@ -615,7 +668,7 @@ def new_task_loop():
             prdate = date.strftime("%Y-%m-%d %H:%M:%S")
             getcources = ExCuWorker.bin_get_monitor()
             if len(USERlist)==1:
-                time.sleep(30)
+                time.sleep(16)
             for user in USERlist:
                 if user.nightmode == True:
                     nightst = datetime.time(23,30)
@@ -638,13 +691,23 @@ def new_task_loop():
                             continue
                        # taskprice = task.price if task.price>0.0001 else "{:^10.8f}".format(task.price)
                         if task.rofl== True and getprice > task.price:
-                            kbfastedititems.append(task)
-                            task.enable = task.enable if user.notifyonce == False else False
-                            printer += msg_tasks.task_printer_raise(user.language,task,getprice)
+                            if task.screenshot != None:
+                                bot.send_photo(user.user_id, photo = open(task.screenshot, 'rb'), caption= task.ToStrNote(getprice))
+                                task.enable = False
+                                time.sleep(1)
+                            else:
+                                kbfastedititems.append(task)
+                                task.enable = task.enable if user.notifyonce == False else False
+                                printer += msg_tasks.task_printer_raise(user.language,task,getprice)
                         elif task.rofl == False and getprice < task.price:
-                            kbfastedititems.append(task)
-                            task.enable = task.enable if user.notifyonce == False else False
-                            printer += msg_tasks.task_printer_fall(user.language,task,getprice)
+                            if task.screenshot != None:
+                                bot.send_photo(user.user_id, photo = open(task.screenshot, 'rb'), caption= task.ToStrNote(getprice))
+                                task.enable = False
+                                time.sleep(1)
+                            else:
+                                kbfastedititems.append(task)
+                                task.enable = task.enable if user.notifyonce == False else False
+                                printer += msg_tasks.task_printer_fall(user.language,task,getprice)
                         elif task.rofl == None:
                             bot.send_message(chat_id=user.user_id, text=f"Some error ocured with task {task.ToShortId()}. Task deleted")
                             TasksList.remove(task)

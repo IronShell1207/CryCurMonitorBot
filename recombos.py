@@ -13,6 +13,8 @@ ckpr_pair_re = re.compile(r'/price\s([a-zA-Z]{2,5})/([a-zA-Z]{2,5})')
 
 edit_task_re = re.compile("t/newv(\d+)")
 
+add_pic_re = re.compile("/addpic\s*([0-9]*)")
+send_pic_re = re.compile("/sendpic\s*([0-9]*)")
 
 re_value_name = re.compile("^([A-Z,0-9]{2,5})$")
 re_pair_spaces = re.compile("^([A-Z,0-9]{2,5})\s([A-Z,0-9]{2,5})$")
