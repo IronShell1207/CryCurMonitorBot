@@ -86,6 +86,7 @@ def get_image_screenshot(message: telebot.types.Message):
         with open(paths, 'wb') as new_file:
             new_file.write(dpwm)
         item.screenshot = paths
+        item.enable = True
         TasksList.append(item)
         CT.write_json_tasks(TasksList)
         bot.send_message(chat_id = message.chat.id, text = f"Screnshot succesuffuly saved for {item.ToShortStr()}")
@@ -96,7 +97,9 @@ def gettext(message):
     item = retUser(message).CTask
     TasksList.remove(item)
     item.note = message.text
+    item.enable = True
     TasksList.append(item)
+    
     CT.write_json_tasks(TasksList)
     bot.send_message(chat_id = message.chat.id, text='Note for task setted!')
     
@@ -154,6 +157,17 @@ def create_task_h(message):
 def get_auto_rofl(base, quote, price):
     prc = ExCuWorker.bin_getCur(base,quote)
     return True if price>prc else False
+
+
+@bot.message_handler(commands=['restart'])
+def restart_bot(message):
+    if message.chat.id == "317966332":
+        bot.send_message(chat_id=message.chat.id, text='Bot restarting')
+        os.system("python main.py")
+        print("Restarting...")
+        exit()
+    
+
 
 def crtask_baseset(message: telebot.types.Message):
     user = retUser(message)
@@ -744,14 +758,18 @@ def new_task_loop():
         new_task_loop()
               
 
+mainthread
+
 def main_loop():
     try:
         Binf = str(bot.get_me()).replace("'",'"').replace('None','"None"').replace('False','"False"').replace('True','"True"')
         botinfo = json.loads(Binf)
         print(f"Bot have been started. \nID: {botinfo['id']}\nName: {botinfo['first_name']}\nUserName: {botinfo['username']} ")
-        mainthread = threading.Thread(target=new_task_loop)#,args=[message])
-        mainthread.start()
-        bot.polling(none_stop=True) 
+        
+        bot.polling(none_stop=True)
+    except telebot.ReadTimeout:
+        time.sleep(3)
+        main_loop()
     except ConnectionError:
         time.sleep(5)
         main_loop()
@@ -761,6 +779,8 @@ def main_loop():
     
 if (__name__=="__main__"):
     try:
+        mainthread = threading.Thread(target=new_task_loop)#,args=[message])
+        mainthread.start()
         main_loop()
     except KeyboardInterrupt:
         print(sys.stderr+ '\nExiting by user request\n')
