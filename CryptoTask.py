@@ -52,7 +52,7 @@ class CryptoTask(object):
         
 
     def ToShortId(self) -> str:
-        return f"#{self.id} {self.base}/{self.quote}"
+        return f"{self.id} {self.base}/{self.quote}"
 
 class TaskEncoder(json.JSONEncoder):
     def default(self, Task):

@@ -324,15 +324,15 @@ or /createtask <base> <quote> <price> <+|-> ("+" for choose raising or "-" for f
 
 def task_printer_raise(lang, ctask: CT.CryptoTask, newprice):
     if lang == "rus":
-        return f"🔺 {ctask.ToShortId()} цена выросла 📈 c {ctask.price} до {newprice}!\n"
+        return f"🔺{ctask.ToShortId()} +{'%.2f' % (((newprice/ctask.price)*100)-100)}% подорожал📈 {ctask.price} -> {newprice}!\n"
     elif lang == "eng":
-        return f"🔺 {ctask.ToShortId()} price raise 📈 from {ctask.price} to {newprice}!\n" 
+        return f"🔺{ctask.ToShortId()} +{'%.2f' % (((newprice/ctask.price)*100)-100)}% raise📈 {ctask.price} -> {newprice}!\n" 
 
 def task_printer_fall(lang, ctask: CT.CryptoTask, newprice):
     if lang == "rus":
-        return f"🔻 {ctask.ToShortId()} цена упала 📉 c {ctask.price} до {newprice}!\n"
+        return f"🔻 {ctask.ToShortId()} -{'%.2f' % (((ctask.price/newprice)*100)-100)}% упал📉 {ctask.price} -> {newprice}!\n"
     elif lang == "eng":
-        return f"🔻 {ctask.ToShortId()} price fall 📉 from {ctask.price} to {newprice}!\n" 
+        return f"🔻 {ctask.ToShortId()} -{'%.2f' % (((ctask.price/newprice)*100)-100)}% fall📉 {ctask.price} -> {newprice}!\n" 
 
 def print_loop(lang, printer, ishints):
     if lang == "rus":

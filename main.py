@@ -159,13 +159,6 @@ def get_auto_rofl(base, quote, price):
     return True if price>prc else False
 
 
-@bot.message_handler(commands=['restart'])
-def restart_bot(message):
-    if message.chat.id == "317966332":
-        bot.send_message(chat_id=message.chat.id, text='Bot restarting')
-        os.system("python main.py")
-        print("Restarting...")
-        exit()
     
 
 
@@ -463,7 +456,7 @@ def callback_taskchanger(call):
         elif r_task == "edittask":
             isEditBtns = retUser(call.message).adveditbtns
             retUser(call.message).CTask = task
-            retKB = keyboards.get_edit_price_keyboard(retUser(call.message).language,task.id,task.rofl,task.enable) if isEditBtns else None
+            retKB = keyboards.get_edit_price_keyboard(retUser(call.message).language,task) if isEditBtns else None
             echo = bot.send_message(chat_id=call.message.chat.id, 
                                     text=msg_tasks.task_edit_request(retUser(call.message).language, task), 
                                     reply_markup=retKB)
